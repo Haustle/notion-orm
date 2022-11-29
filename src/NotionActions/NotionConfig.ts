@@ -17,7 +17,7 @@ type importClassType = {
     databaseClassName: string;
 };
 
-export const getDatabaseTypes = async (notionInfo: NotionConfigType) => {
+export const generateDatabaseTypes = async (notionInfo: NotionConfigType) => {
     const { auth, databaseIds } = notionInfo;
 
     // Making sure the user is passing valid arguments
@@ -53,7 +53,7 @@ export const getDatabaseTypes = async (notionInfo: NotionConfigType) => {
         collectionNames.push(databaseClassName);
 
         collectionClassImports.push(
-            importDatabaseClassType({
+            databaseImportStatement({
                 databaseClassName,
                 databaseId,
             })
@@ -74,7 +74,9 @@ export const getDatabaseTypes = async (notionInfo: NotionConfigType) => {
     console.log("after");
 };
 
-function importDatabaseClassType(dbClass: importClassType) {
+
+// Create the import statement for notion.ts file
+function databaseImportStatement(dbClass: importClassType) {
     return ts.factory.createImportDeclaration(
         undefined,
         ts.factory.createImportClause(
@@ -88,6 +90,8 @@ function importDatabaseClassType(dbClass: importClassType) {
                 ),
             ])
         ),
+
+        // We've setup paths to allow @notion-database access
         ts.factory.createStringLiteral(
             `@notion-database/${dbClass.databaseId}`
         ),
@@ -122,6 +126,8 @@ function mainNotionVariable(databaseNames: string[]) {
     );
 }
 
+
+// Creates file that import all generated notion database Ids
 function createNotionFile(nodeArr: ts.Node[]) {
     const nodes = ts.factory.createNodeArray(nodeArr);
     const sourceFile = ts.createSourceFile(
