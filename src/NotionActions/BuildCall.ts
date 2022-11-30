@@ -32,9 +32,7 @@ GENERATE OBJECT BASED ON TYPE
 const selectCall = (args: { value: string }) => {
     const { value } = args;
     const select = {
-        // id: "",
         name: value,
-        // color: "default",
     };
     return { select };
 };

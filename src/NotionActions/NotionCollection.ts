@@ -1,4 +1,5 @@
 import { CreatePageParameters } from "@notionhq/client/build/src/api-endpoints";
+import { Client } from "@notionhq/client";
 import { getCall } from "./BuildCall";
 import { PropertyType } from "./GenerateTypes";
 
@@ -25,8 +26,10 @@ export class CollectionActions<CollectionType extends {}> {
     }
 
     // Add page to a database
-    add(pageObject: CollectionType) {
-        console.log(pageObject);
+    async add(pageObject: CollectionType) {
+        const NotionClient: Client = new Client({
+            auth: process.env.NOTION_KEY
+        });
         const callBody: CreatePageParameters = {
             parent: {
                 database_id: this.databaseId,
@@ -46,7 +49,8 @@ export class CollectionActions<CollectionType extends {}> {
             callBody.properties[columnName] = columnObject!;
         });
 
-        console.log(JSON.stringify(callBody, null, 4));
+        // console.log(JSON.stringify(callBody, null, 4));
+        await NotionClient.pages.create(callBody);
     }
 
     // Look for page inside the database
