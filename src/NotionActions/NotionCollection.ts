@@ -2,19 +2,18 @@ import { CreatePageParameters } from "@notionhq/client/build/src/api-endpoints";
 import { Client } from "@notionhq/client";
 import { getCall } from "./BuildCall";
 import { PropertyType } from "./GenerateTypes";
+import { FilterOptions, Query } from "./queryTypes";
 require("dotenv").config();
 
-interface Query<T> {
-	query: {
-		where: Partial<T>;
-	};
-}
-type propNameToColumnNameType = Record<
+export type propNameToColumnNameType = Record<
 	string,
 	{ columnName: string; type: PropertyType }
 >;
 
-export class CollectionActions<CollectionType extends {}> {
+export class CollectionActions<
+	CollectionType extends Record<string, any>,
+	X extends Record<keyof CollectionType, keyof FilterOptions>
+> {
 	private databaseId: string;
 	private propNameToColumnName: propNameToColumnNameType;
 
@@ -55,5 +54,5 @@ export class CollectionActions<CollectionType extends {}> {
 	}
 
 	// Look for page inside the database
-	query(q: Query<CollectionType>) {}
+	query(q: Query<X>) {}
 }
