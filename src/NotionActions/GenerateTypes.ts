@@ -98,6 +98,7 @@ export async function generateTypes(dbResponse: GetDatabaseResponse) {
 		generateDatabaseIdVariable(databaseId),
 		CollectionType,
 		mapPropNameToColumnDetails(propNameToColumnName),
+		ColNameToType(),
 		exportCollectionActions(databaseClassName),
 	];
 
@@ -267,32 +268,78 @@ function mapPropNameToColumnDetails(colMap: propNameToColumnNameType) {
 				ts.factory.createIdentifier("propMap"),
 				undefined,
 				undefined,
-				ts.factory.createObjectLiteralExpression(
-					[
-						...Object.entries(colMap).map(([propName, value]) =>
-							ts.factory.createPropertyAssignment(
-								ts.factory.createStringLiteral(propName),
-								ts.factory.createObjectLiteralExpression(
-									[
-										ts.factory.createPropertyAssignment(
-											ts.factory.createIdentifier("columnName"),
-											ts.factory.createStringLiteral(value.columnName)
-										),
-										ts.factory.createPropertyAssignment(
-											ts.factory.createIdentifier("type"),
-											ts.factory.createStringLiteral(value.type)
-										),
-									],
-									true
+				ts.factory.createAsExpression(
+					ts.factory.createObjectLiteralExpression(
+						[
+							...Object.entries(colMap).map(([propName, value]) =>
+								ts.factory.createPropertyAssignment(
+									ts.factory.createStringLiteral(propName),
+									ts.factory.createObjectLiteralExpression(
+										[
+											ts.factory.createPropertyAssignment(
+												ts.factory.createIdentifier("columnName"),
+												ts.factory.createStringLiteral(value.columnName)
+											),
+											ts.factory.createPropertyAssignment(
+												ts.factory.createIdentifier("type"),
+												ts.factory.createStringLiteral(value.type)
+											),
+										],
+										true
+									)
 								)
-							)
-						),
-					],
-					true
+							),
+						],
+						true
+					),
+					ts.factory.createTypeReferenceNode(
+						ts.factory.createIdentifier("const"),
+						undefined
+					)
 				)
 			),
 		],
 		ts.NodeFlags.Const
+	);
+}
+
+function ColNameToType() {
+	return ts.factory.createTypeAliasDeclaration(
+		undefined,
+		ts.factory.createIdentifier("ColNameToType"),
+		undefined,
+		ts.factory.createMappedTypeNode(
+			undefined,
+			ts.factory.createTypeParameterDeclaration(
+				undefined,
+				ts.factory.createIdentifier("Property"),
+				ts.factory.createTypeOperatorNode(
+					ts.SyntaxKind.KeyOfKeyword,
+					ts.factory.createTypeQueryNode(
+						ts.factory.createIdentifier("propMap"),
+						undefined
+					)
+				),
+				undefined
+			),
+			undefined,
+			undefined,
+			ts.factory.createIndexedAccessTypeNode(
+				ts.factory.createIndexedAccessTypeNode(
+					ts.factory.createTypeQueryNode(
+						ts.factory.createIdentifier("propMap"),
+						undefined
+					),
+					ts.factory.createTypeReferenceNode(
+						ts.factory.createIdentifier("Property"),
+						undefined
+					)
+				),
+				ts.factory.createLiteralTypeNode(ts.factory.createStringLiteral("type"))
+			),
+			undefined
+			/* unknown */
+		)
 	);
 }
 
@@ -339,6 +386,10 @@ function exportCollectionActions(databaseName: string) {
 						[
 							ts.factory.createTypeReferenceNode(
 								ts.factory.createIdentifier("CollectionType"),
+								undefined
+							),
+							ts.factory.createTypeReferenceNode(
+								ts.factory.createIdentifier("ColNameToType"),
 								undefined
 							),
 						],
