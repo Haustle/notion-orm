@@ -49,16 +49,51 @@ export type FilterOptions = {
 	url: string;
 };
 
-type SingleFilter<T extends Record<string, keyof FilterOptions>> = {
+export type apiFilterQuery = {
+	filter?: apiSingleFilter | apiAndFilter | apiOrFilter;
+};
+
+const normQuery: apiFilterQuery = {
+	filter: {
+		property: "",
+	},
+};
+
+type property = { property: string };
+export type x = {
+	[prop in keyof FilterOptions]?: Partial<FilterOptions[prop]>;
+};
+
+export interface apiSingleFilter extends x {
+	property: string;
+}
+
+export type apiFilterType =
+	| apiSingleFilter
+	| apiAndFilter
+	| apiOrFilter
+	| undefined;
+type apiAndFilter = {
+	and: Array<apiFilterType>;
+};
+
+type apiOrFilter = {
+	or: Array<apiFilterType>;
+};
+
+export type SingleFilter<T extends Record<string, keyof FilterOptions>> = {
 	[Property in keyof T]?: Partial<FilterOptions[T[Property]]>;
 };
 // & { [OtherProperty in keyof T]? : OtherProperty extends never } ;
 
-type CompoundFilters<T extends Record<string, keyof FilterOptions>> = {
-	and?: Array<SingleFilter<T> | CompoundFilters<T>>;
-	or?: Array<SingleFilter<T> | CompoundFilters<T>>;
-};
+export type CompoundFilters<T extends Record<string, keyof FilterOptions>> =
+	| { and: Array<SingleFilter<T> | CompoundFilters<T>> }
+	| { or: Array<SingleFilter<T> | CompoundFilters<T>> };
+
+export type QueryFilter<T extends Record<string, keyof FilterOptions>> =
+	| SingleFilter<T>
+	| CompoundFilters<T>;
 export type Query<T extends Record<string, keyof FilterOptions>> = {
-	filter?: SingleFilter<T> | CompoundFilters<T>;
+	filter?: QueryFilter<T>;
 	sort?: [];
 };
