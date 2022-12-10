@@ -9,7 +9,7 @@ import {
 	apiFilterType,
 	apiSingleFilter,
 	CompoundFilters,
-	FilterOptions,
+	FilterOptionNames,
 	Query,
 	QueryFilter,
 	SingleFilter,
@@ -23,7 +23,7 @@ export type propNameToColumnNameType = Record<
 
 export class CollectionActions<
 	CollectionType extends Record<string, any>,
-	ColNameToType extends Record<keyof CollectionType, keyof FilterOptions>
+	ColNameToType extends Record<keyof CollectionType, FilterOptionNames>
 > {
 	private NotionClient: Client = new Client({
 		auth: process.env.NOTION_KEY,
@@ -67,7 +67,7 @@ export class CollectionActions<
 	}
 
 	// Look for page inside the database
-	async query(query: Query<ColNameToType>) {
+	async query(query: Query<CollectionType, ColNameToType>) {
 		const queryCall: QueryDatabaseParameters = {
 			database_id: this.databaseId,
 		};
@@ -89,18 +89,18 @@ export class CollectionActions<
 	}
 
 	recursivelyBuildFilter(
-		queryFilter: QueryFilter<ColNameToType>
+		queryFilter: QueryFilter<CollectionType, ColNameToType>
 	): apiFilterType {
 		// Need to loop because we don't kno
 		for (const prop in queryFilter) {
 			// if the filter is "and" || "or" we need to recursively
 			if (prop === "and" || prop === "or") {
-				const compoundFilters: QueryFilter<ColNameToType>[] =
+				const compoundFilters: QueryFilter<CollectionType, ColNameToType>[] =
 					// @ts-ignore
 					queryFilter[prop];
 
 				const compoundApiFilters = compoundFilters.map(
-					(i: QueryFilter<ColNameToType>) => {
+					(i: QueryFilter<CollectionType, ColNameToType>) => {
 						return this.recursivelyBuildFilter(i);
 					}
 				);

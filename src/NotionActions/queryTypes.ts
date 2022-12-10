@@ -1,3 +1,7 @@
+/**
+ * Column types' for all query options
+ */
+
 type TextPropertyFilters = {
 	equals: string;
 	does_not_equal: string;
@@ -25,46 +29,96 @@ type CheckBoxPropertyFilters = {
 	does_not_equal: boolean;
 };
 
-type SelectPropertyFilters = {
-	equals: string;
-	does_not_equal: string;
+//
+type SelectPropertyFilters<T> = {
+	equals: (T extends Array<any> ? T[number] : T) | (string & {});
+	does_not_equal: (T extends Array<any> ? T[number] : T) | (string & {});
 	is_empty: true;
 	is_not_empty: true;
 };
 
-type MultiSelectPropertyFilters = {
-	contains: string;
-	does_not_contain: string;
+// pay in array --> need to turn into union
+type MultiSelectPropertyFilters<T> = {
+	contains: (T extends Array<any> ? T[number] : T) | (string & {});
+	does_not_contain: (T extends Array<any> ? T[number] : T) | (string & {});
 	is_empty: true;
 	is_not_empty: true;
 };
 
-export type FilterOptions = {
+export type FilterOptions<T = []> = {
 	text: TextPropertyFilters;
 	title: TextPropertyFilters;
 	number: NumberPropertyFilters;
 	checkbox: CheckBoxPropertyFilters;
-	select: SelectPropertyFilters;
-	multi_select: MultiSelectPropertyFilters;
+	select: SelectPropertyFilters<T>;
+	multi_select: MultiSelectPropertyFilters<T>;
 	url: string;
+};
+
+export type FilterOptionNames =
+	| "text"
+	| "title"
+	| "number"
+	| "checkbox"
+	| "select"
+	| "multi_select"
+	| "url";
+
+/**
+ * Types to build query object user types out
+ */
+
+const x = {
+	character: "multi_select",
+};
+
+type CollectionType = {
+	[key: string]: any;
+};
+
+// T is a column name to column type
+// Y is the collection type
+export type SingleFilter<
+	Y extends Record<string, any>,
+	T extends Record<keyof Y, FilterOptionNames>
+> = {
+	// Passing the type from collection
+	[Property in keyof Y]?: Partial<FilterOptions<Y[Property]>[T[Property]]>;
+};
+
+export type CompoundFilters<
+	Y extends Record<string, any>,
+	T extends Record<keyof Y, FilterOptionNames>
+> =
+	| { and: Array<SingleFilter<Y, T> | CompoundFilters<Y, T>> }
+	| { or: Array<SingleFilter<Y, T> | CompoundFilters<Y, T>> };
+
+export type QueryFilter<
+	Y extends Record<string, any>,
+	T extends Record<keyof Y, FilterOptionNames>
+> = SingleFilter<Y, T> | CompoundFilters<Y, T>;
+
+export type Query<
+	Y extends Record<string, any>,
+	T extends Record<keyof Y, FilterOptionNames>
+> = {
+	filter?: QueryFilter<Y, T>;
+	sort?: [];
 };
 
 export type apiFilterQuery = {
 	filter?: apiSingleFilter | apiAndFilter | apiOrFilter;
 };
 
-const normQuery: apiFilterQuery = {
-	filter: {
-		property: "",
-	},
-};
+/**
+ * Transform the types above to build types to
+ * actually build schema for query request
+ */
 
-type property = { property: string };
-export type x = {
+type apiColumnTypeToOptions = {
 	[prop in keyof FilterOptions]?: Partial<FilterOptions[prop]>;
 };
-
-export interface apiSingleFilter extends x {
+export interface apiSingleFilter extends apiColumnTypeToOptions {
 	property: string;
 }
 
@@ -79,21 +133,4 @@ type apiAndFilter = {
 
 type apiOrFilter = {
 	or: Array<apiFilterType>;
-};
-
-export type SingleFilter<T extends Record<string, keyof FilterOptions>> = {
-	[Property in keyof T]?: Partial<FilterOptions[T[Property]]>;
-};
-// & { [OtherProperty in keyof T]? : OtherProperty extends never } ;
-
-export type CompoundFilters<T extends Record<string, keyof FilterOptions>> =
-	| { and: Array<SingleFilter<T> | CompoundFilters<T>> }
-	| { or: Array<SingleFilter<T> | CompoundFilters<T>> };
-
-export type QueryFilter<T extends Record<string, keyof FilterOptions>> =
-	| SingleFilter<T>
-	| CompoundFilters<T>;
-export type Query<T extends Record<string, keyof FilterOptions>> = {
-	filter?: QueryFilter<T>;
-	sort?: [];
 };
