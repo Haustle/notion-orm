@@ -16,7 +16,7 @@ async function main() {
 			if (databaseNames.length < 0) {
 				console.log("generated no types");
 			} else {
-				console.log("Generated types for: ");
+				console.log("Generated types for the following Database's: ");
 				for (let x = 0; x < databaseNames.length; x++) {
 					console.log(`${x}. ${databaseNames[x]}`);
 				}
