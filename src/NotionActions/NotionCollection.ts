@@ -55,7 +55,6 @@ export class CollectionActions<
 			const { type, columnName } = this.propNameToColumnName[propName];
 			const columnObject = getCall({
 				type,
-				// @ts-ignore
 				value: pageObject[propName],
 			});
 

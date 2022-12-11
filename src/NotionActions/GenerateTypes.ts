@@ -33,11 +33,8 @@ export async function generateTypes(dbResponse: GetDatabaseResponse) {
 		title,
 	} = dbResponse as DatabaseObjectResponse;
 	const propNameToColumnName: propNameToColumnNameType = {};
-
-	const databaseClassName = camelize(title[0].plain_text).replace(
-		/[^a-zA-Z0-9]/g,
-		""
-	);
+	const databaseName = title[0].plain_text;
+	const databaseClassName = camelize(databaseName).replace(/[^a-zA-Z0-9]/g, "");
 
 	// keep track of column Types
 	const columnTypes: Record<string, PropertyType> = {};
@@ -82,10 +79,8 @@ export async function generateTypes(dbResponse: GetDatabaseResponse) {
 		columnTypes[columnName] = type;
 	});
 
-	console.log("column size: ", collectionTypeProps.length);
 	// Object
 	const CollectionType = ts.factory.createTypeAliasDeclaration(
-		undefined,
 		[ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
 		ts.factory.createIdentifier("CollectionType"),
 		undefined,
@@ -131,7 +126,7 @@ export async function generateTypes(dbResponse: GetDatabaseResponse) {
 	}
 	fs.writeFileSync(path.resolve(outputDir, `${databaseId}.ts`), outputFile);
 
-	return { databaseClassName, databaseId };
+	return { databaseName, databaseClassName, databaseId };
 }
 
 // generate text property

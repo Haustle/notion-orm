@@ -7,7 +7,7 @@ import path from "path";
 
 require("dotenv").config();
 
-type NotionConfigType = {
+export type NotionConfigType = {
 	auth: string;
 	databaseIds: string[];
 };
@@ -22,10 +22,12 @@ export const createDatabaseTypes = async (notionInfo: NotionConfigType) => {
 
 	// Making sure the user is passing valid arguments
 	if (!auth) {
-		throw Error("Please pass a valid Notion Integration Key");
+		console.error("Please pass a valid Notion Integration Key");
+		process.exit(1);
 	}
 	if (databaseIds.length < 0) {
-		throw Error("Please pass some database Ids");
+		console.error("Please pass some database Ids");
+		process.exit(1);
 	}
 
 	// Initialize client
@@ -33,9 +35,11 @@ export const createDatabaseTypes = async (notionInfo: NotionConfigType) => {
 		auth: auth,
 	});
 
+	const databaseNames: string[] = [];
+
 	// retrieve the database object
-	const collectionClassImports: ts.ImportDeclaration[] = [];
-	const collectionNames: string[] = [];
+	const databaseClassImports: ts.ImportDeclaration[] = [];
+	const databaseCamelizedNames: string[] = [];
 
 	for (const database_id of databaseIds) {
 		let dbOjbect: GetDatabaseResponse;
@@ -46,32 +50,29 @@ export const createDatabaseTypes = async (notionInfo: NotionConfigType) => {
 				database_id,
 			});
 		} catch (e) {
-			return;
+			console.error(e);
+			return { databaseNames: [] };
 		}
-		const { databaseClassName, databaseId } = await generateTypes(dbOjbect);
-		console.log(`database name: ${databaseClassName}`);
-		collectionNames.push(databaseClassName);
+		const { databaseClassName, databaseId, databaseName } = await generateTypes(
+			dbOjbect
+		);
+		databaseNames.push(databaseName);
+		databaseCamelizedNames.push(databaseClassName);
 
-		collectionClassImports.push(
+		databaseClassImports.push(
 			databaseImportStatement({
 				databaseClassName,
 				databaseId,
 			})
 		);
-		console.log(collectionClassImports.length);
 	}
 
 	const nodeArr = [
-		...collectionClassImports,
-		mainNotionVariable(collectionNames),
+		...databaseClassImports,
+		mainNotionVariable(databaseCamelizedNames),
 	];
-
-	console.log(`num imports: ${collectionClassImports.length}`);
-	console.log(`num of names: ${collectionNames.length}`);
-
 	createNotionFile(nodeArr);
-
-	console.log("after");
+	return { databaseNames };
 };
 
 // Create the import statement for notion.ts file

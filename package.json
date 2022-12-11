@@ -2,9 +2,13 @@
   "name": "notion-orm",
   "version": "1.0.0",
   "description": "tool to bring collection types to typescript",
-  "main": "src/index.ts",
+  "main": "build/index.js",
+  "bin": {
+    "notion": "build/index.js"
+  },
   "scripts": {
     "start": "npx tsc && node build/index.js",
+    "build": "tsc -p .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "refresh": "rm -rf ./node_modules ./package-lock.json && npm install"
   },
