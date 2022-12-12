@@ -1,6 +1,22 @@
 /**
  * Column types' for all query options
  */
+// import { PageObjectResponse }
+
+import { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+
+type columnDiscriminatedUnionTypes = PageObjectResponse["properties"];
+type NotionColumnTypes =
+	columnDiscriminatedUnionTypes[keyof columnDiscriminatedUnionTypes]["type"];
+
+export type FilterOptionNames =
+	| "text"
+	| "title"
+	| "number"
+	| "checkbox"
+	| "select"
+	| "multi_select"
+	| "url";
 
 type TextPropertyFilters = {
 	equals: string;
@@ -55,15 +71,6 @@ export type FilterOptions<T = []> = {
 	url: string;
 };
 
-export type FilterOptionNames =
-	| "text"
-	| "title"
-	| "number"
-	| "checkbox"
-	| "select"
-	| "multi_select"
-	| "url";
-
 /**
  * Types to build query object user types out
  */
@@ -72,15 +79,13 @@ const x = {
 	character: "multi_select",
 };
 
-type CollectionType = {
-	[key: string]: any;
-};
-
+type ColumnNameToNotionColumnType<T> = Record<keyof T, FilterOptionNames>;
+type ColumnNameToPossibleValues = Record<string, any>;
 // T is a column name to column type
 // Y is the collection type
 export type SingleFilter<
 	Y extends Record<string, any>,
-	T extends Record<keyof Y, FilterOptionNames>
+	T extends ColumnNameToNotionColumnType<Y>
 > = {
 	// Passing the type from collection
 	[Property in keyof Y]?: Partial<FilterOptions<Y[Property]>[T[Property]]>;

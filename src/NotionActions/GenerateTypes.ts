@@ -26,7 +26,9 @@ type propNameToColumnNameType = Record<
 /* 
 Responsible for generating `.ts` files
 */
-export async function generateTypes(dbResponse: GetDatabaseResponse) {
+export async function createTypescriptFileForDatabase(
+	dbResponse: GetDatabaseResponse
+) {
 	const {
 		id: databaseId,
 		properties,
@@ -36,61 +38,63 @@ export async function generateTypes(dbResponse: GetDatabaseResponse) {
 	const databaseName = title[0].plain_text;
 	const databaseClassName = camelize(databaseName).replace(/[^a-zA-Z0-9]/g, "");
 
-	// keep track of column Types
-	const columnTypes: Record<string, PropertyType> = {};
-
-	const collectionTypeProps: ts.TypeElement[] = [];
+	const databaseColumnTypeProps: ts.TypeElement[] = [];
 
 	// Looping through each column of database
 	Object.values(properties).forEach((value) => {
-		const { type, name: columnName } = value;
+		const { type: columnType, name: columnName } = value;
+
+		// Taking the column name and camelizing it for typescript use
+		const camelizedColumnName = camelize(columnName);
+
 		// Creating map of column name to the column's name in the database's typescript type
-
-		const typePropColumnName = camelize(columnName);
-		propNameToColumnName[typePropColumnName] = {
+		propNameToColumnName[camelizedColumnName] = {
 			columnName,
-			type,
+			type: columnType,
 		};
 
-		type x = {
-			d: Date;
-		};
-		if (type === "title" || type === "rich_text") {
+		if (columnType === "title" || columnType === "rich_text") {
 			// add text column to collection type
-			collectionTypeProps.push(
-				textProperty(typePropColumnName, type === "title")
+			databaseColumnTypeProps.push(
+				createTextProperty(camelizedColumnName, columnType === "title")
 			);
-		} else if (type === "number") {
-			collectionTypeProps.push(numberProperty(typePropColumnName));
-		} else if (type === "url") {
-			collectionTypeProps.push(textProperty(typePropColumnName, false));
-		} else if (type === "date") {
-			collectionTypeProps.push(dateProperty(typePropColumnName));
-		} else if (type == "select" || type == "multi_select") {
-			// Because select's and types are going to ha
+		} else if (columnType === "number") {
+			// add number column to collection type
+			databaseColumnTypeProps.push(createNumberProperty(camelizedColumnName));
+		} else if (columnType === "url") {
+			// add url column to collection type
+			databaseColumnTypeProps.push(
+				createTextProperty(camelizedColumnName, false)
+			);
+		} else if (columnType === "date") {
+			// add Date column to collection type
+			databaseColumnTypeProps.push(createDateProperty(camelizedColumnName));
+		} else if (columnType == "select" || columnType == "multi_select") {
 			// @ts-ignore
 			const options = value[type].options.map((x) => x.name);
-			collectionTypeProps.push(
-				multiOptionType(typePropColumnName, options, type === "multi_select")
+			databaseColumnTypeProps.push(
+				createMultiOptionProp(
+					camelizedColumnName,
+					options,
+					// This determines whether the property needs to be a union or a union array
+					columnType === "multi_select"
+				)
 			);
 		}
-
-		// set the column type
-		columnTypes[columnName] = type;
 	});
 
-	// Object
+	// Object type that represents the database schema
 	const CollectionType = ts.factory.createTypeAliasDeclaration(
 		[ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
 		ts.factory.createIdentifier("CollectionType"),
 		undefined,
-		ts.factory.createTypeLiteralNode(collectionTypeProps)
+		ts.factory.createTypeLiteralNode(databaseColumnTypeProps)
 	);
 
 	// Top level non-nested variable, functions, types
 	const nodeArr = [
 		importCollectionClass(),
-		generateDatabaseIdVariable(databaseId),
+		createDatabaseIdVariable(databaseId),
 		CollectionType,
 		mapPropNameToColumnDetails(propNameToColumnName),
 		ColNameToType(),
@@ -130,7 +134,7 @@ export async function generateTypes(dbResponse: GetDatabaseResponse) {
 }
 
 // generate text property
-function textProperty(name: string, isTitle: boolean) {
+function createTextProperty(name: string, isTitle: boolean) {
 	const text = ts.factory.createPropertySignature(
 		undefined,
 		ts.factory.createIdentifier(name),
@@ -144,7 +148,7 @@ function textProperty(name: string, isTitle: boolean) {
  * Generate number property to go inside a type
  * name: number
  */
-function numberProperty(name: string) {
+function createNumberProperty(name: string) {
 	const number = ts.factory.createPropertySignature(
 		undefined,
 		ts.factory.createIdentifier(name),
@@ -167,7 +171,11 @@ function numberProperty(name: string) {
  *
  * name = ("x" | "y" | "z")[]
  */
-function multiOptionType(name: string, options: string[], array: boolean) {
+function createMultiOptionProp(
+	name: string,
+	options: string[],
+	array: boolean
+) {
 	return ts.factory.createPropertySignature(
 		undefined,
 		ts.factory.createIdentifier(name),
@@ -181,7 +189,7 @@ function multiOptionType(name: string, options: string[], array: boolean) {
 									ts.factory.createStringLiteral(option)
 								)
 							),
-							otherStringProp(),
+							createOtherStringProp(),
 						])
 					)
 			  )
@@ -191,19 +199,19 @@ function multiOptionType(name: string, options: string[], array: boolean) {
 							ts.factory.createStringLiteral(option)
 						)
 					),
-					otherStringProp(),
+					createOtherStringProp(),
 			  ])
 	);
 }
 
 // string & {}. Allows users to pass in values
-function otherStringProp() {
+function createOtherStringProp() {
 	return ts.factory.createIntersectionTypeNode([
 		ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
 		ts.factory.createTypeLiteralNode([]),
 	]);
 }
-function dateProperty(name: string) {
+function createDateProperty(name: string) {
 	return ts.factory.createPropertySignature(
 		undefined,
 		ts.factory.createIdentifier("s"),
@@ -217,7 +225,7 @@ function dateProperty(name: string) {
 
 // Generate database Id variable
 // const databaseId = <database-id>
-function generateDatabaseIdVariable(databaseId: string) {
+function createDatabaseIdVariable(databaseId: string) {
 	return ts.factory.createVariableStatement(
 		undefined,
 		ts.factory.createVariableDeclarationList(

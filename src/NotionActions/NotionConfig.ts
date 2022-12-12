@@ -1,6 +1,6 @@
 import { Client } from "@notionhq/client";
 import { GetDatabaseResponse } from "@notionhq/client/build/src/api-endpoints";
-import { generateTypes } from "./GenerateTypes";
+import { createTypescriptFileForDatabase } from "./GenerateTypes";
 import * as ts from "typescript";
 import fs from "fs";
 import path from "path";
@@ -53,9 +53,8 @@ export const createDatabaseTypes = async (notionInfo: NotionConfigType) => {
 			console.error(e);
 			return { databaseNames: [] };
 		}
-		const { databaseClassName, databaseId, databaseName } = await generateTypes(
-			dbOjbect
-		);
+		const { databaseClassName, databaseId, databaseName } =
+			await createTypescriptFileForDatabase(dbOjbect);
 		databaseNames.push(databaseName);
 		databaseCamelizedNames.push(databaseClassName);
 
