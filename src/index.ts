@@ -2,16 +2,27 @@
 
 import fs from "fs";
 import { createDatabaseTypes } from "./NotionActions/NotionConfig";
+import path from "path";
 require("dotenv").config();
 
 async function main() {
 	const args = process.argv.slice(2);
 
 	if (args.length === 1 && args[0] === "generate") {
-		const notionConfigDir = "./build/notion.config.js";
-		if (fs.existsSync(notionConfigDir)) {
+		const projDir = process.cwd();
+
+		const notionConfigDirJS = fs.existsSync(
+			path.join(projDir, "notion.config.js")
+		);
+		const notionConfigDirTS = fs.existsSync(
+			path.join(projDir, "notion.config.js")
+		);
+
+		console.log(path.join(projDir, "notion.config"));
+		if (notionConfigDirJS || notionConfigDirTS) {
 			// this is a relative import, so we can escape out
-			const config = require("./notion.config").default;
+
+			const config = require(path.join(projDir, "notion.config")).default;
 			const { databaseNames } = await createDatabaseTypes(config);
 			if (databaseNames.length < 0) {
 				console.log("generated no types");
