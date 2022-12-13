@@ -22,7 +22,8 @@ async function main() {
 		if (notionConfigDirJS || notionConfigDirTS) {
 			// this is a relative import, so we can escape out
 
-			const config = require(path.join(projDir, "notion.config")).default;
+			const config = require(path.join(projDir, "notion.config"));
+
 			const { databaseNames } = await createDatabaseTypes(config);
 			if (databaseNames.length < 0) {
 				console.log("generated no types");

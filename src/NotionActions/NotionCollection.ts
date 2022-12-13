@@ -87,7 +87,7 @@ export class CollectionActions<
 		console.log(apiQuery);
 	}
 
-	recursivelyBuildFilter(
+	private recursivelyBuildFilter(
 		queryFilter: QueryFilter<CollectionType, ColNameToType>
 	): apiFilterType {
 		// Need to loop because we don't kno

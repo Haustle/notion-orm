@@ -71,7 +71,7 @@ export async function createTypescriptFileForDatabase(
 			databaseColumnTypeProps.push(createDateProperty(camelizedColumnName));
 		} else if (columnType == "select" || columnType == "multi_select") {
 			// @ts-ignore
-			const options = value[type].options.map((x) => x.name);
+			const options = value[columnType].options.map((x) => x.name);
 			databaseColumnTypeProps.push(
 				createMultiOptionProp(
 					camelizedColumnName,
