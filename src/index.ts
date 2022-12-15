@@ -15,7 +15,7 @@ async function main() {
 			path.join(projDir, "notion.config.js")
 		);
 		const notionConfigDirTS = fs.existsSync(
-			path.join(projDir, "notion.config.js")
+			path.join(projDir, "notion.config.ts")
 		);
 
 		console.log(path.join(projDir, "notion.config"));
