@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
-    "target": "ES6",                                 
+    "target": "es2016",                                 
     "lib": ["es6"],                                      
     "module": "commonjs",                                
     "rootDir": "src",                                    
@@ -12,14 +12,11 @@
     "strict": true,      
     "baseUrl": "src",                                
     "noImplicitAny": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
     "paths": {
       "@notion-database/*":["NotionActions/DatabaseTypes/*"]
     }                               
   },
-  "include": ["src"]
+  "include": ["src/**/*", "src/NotionActions/DatabaseTypes"]
 }
 
 
