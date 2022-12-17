@@ -116,3 +116,4 @@ function createNotionFile(nodeArr) {
     }
     fs_1.default.writeFileSync(path_1.default.resolve(outputDir, "notion.ts"), outputFile);
 }
+//# sourceMappingURL=NotionConfig.js.map

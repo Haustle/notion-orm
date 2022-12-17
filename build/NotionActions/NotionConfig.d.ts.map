@@ -1,0 +1,1 @@
+{"version":3,"file":"NotionConfig.d.ts","sourceRoot":"","sources":["../../src/NotionActions/NotionConfig.ts"],"names":[],"mappings":"AASA,MAAM,MAAM,gBAAgB,GAAG;IAC9B,IAAI,EAAE,MAAM,CAAC;IACb,WAAW,EAAE,MAAM,EAAE,CAAC;CACtB,CAAC;AAOF,eAAO,MAAM,mBAAmB,eAAsB,gBAAgB;;EAuDrE,CAAC"}

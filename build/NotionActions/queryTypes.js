@@ -10,3 +10,4 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const x = {
     character: "multi_select",
 };
+//# sourceMappingURL=queryTypes.js.map

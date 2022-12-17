@@ -242,3 +242,4 @@ function camelize(str) {
         return index === 0 ? match.toLowerCase() : match.toUpperCase();
     });
 }
+//# sourceMappingURL=GenerateTypes.js.map
