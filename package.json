@@ -1,6 +1,6 @@
 {
   "name": "@haustle/notion-orm",
-  "version": "0.0.1",
+  "version": "0.0.22",
   "description": "tool to bring collection types to typescript",
   "main": "build/index.js",
   "bin": {
