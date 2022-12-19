@@ -112,23 +112,36 @@ export async function createTypescriptFileForDatabase(
 	);
 	const printer = ts.createPrinter();
 
-	const outputFile = printer.printList(
+	const typescriptCodeToString = printer.printList(
 		ts.ListFormat.MultiLine,
 		nodes,
 		sourceFile
 	);
 
+	const transpileToJavaScript = ts.transpile(typescriptCodeToString, {
+		module: ts.ModuleKind.None,
+		target: ts.ScriptTarget.ES2015,
+	});
+
 	// Create our output folder
 	const outputDir = path.join(
 		__dirname,
-		"../../src",
+		"../../build",
 		"NotionActions",
 		"DatabaseTypes"
 	);
 	if (!fs.existsSync(outputDir)) {
 		fs.mkdirSync(outputDir);
 	}
-	fs.writeFileSync(path.resolve(outputDir, `${databaseId}.ts`), outputFile);
+	fs.writeFileSync(
+		path.resolve(outputDir, `${databaseId}.ts`),
+		typescriptCodeToString
+	);
+
+	fs.writeFileSync(
+		path.resolve(outputDir, `${databaseId}.js`),
+		transpileToJavaScript
+	);
 
 	return { databaseName, databaseClassName, databaseId };
 }

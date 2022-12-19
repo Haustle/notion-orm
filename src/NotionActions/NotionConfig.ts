@@ -40,7 +40,13 @@ export const createDatabaseTypes = async (notionInfo: NotionConfigType) => {
 	// retrieve the database object
 	const databaseClassImports: ts.ImportDeclaration[] = [];
 	const databaseCamelizedNames: string[] = [];
-
+	const buildDir = path.join(
+		__dirname,
+		"../../build",
+		"NotionActions",
+		"DatabaseTypes"
+	);
+	fs.rmdir(buildDir, () => console.log("Deleting current database types..."));
 	for (const database_id of databaseIds) {
 		let dbOjbect: GetDatabaseResponse;
 

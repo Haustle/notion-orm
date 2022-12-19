@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "npx tsc && node build/index.js",
-    "build": "tsc -p .",
+    "build": "rm -rf build && tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "refresh": "rm -rf ./node_modules ./package-lock.json && npm install"
   },
