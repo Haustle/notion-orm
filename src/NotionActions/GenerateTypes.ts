@@ -85,7 +85,7 @@ export async function createTypescriptFileForDatabase(
 
 	// Object type that represents the database schema
 	const CollectionType = ts.factory.createTypeAliasDeclaration(
-		[ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+		undefined,
 		ts.factory.createIdentifier("CollectionType"),
 		undefined,
 		ts.factory.createTypeLiteralNode(databaseColumnTypeProps)

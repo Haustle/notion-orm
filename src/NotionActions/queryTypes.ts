@@ -16,7 +16,8 @@ export type FilterOptionNames =
 	| "checkbox"
 	| "select"
 	| "multi_select"
-	| "url";
+	| "url"
+	| "date";
 
 type TextPropertyFilters = {
 	equals: string;
@@ -61,6 +62,23 @@ type MultiSelectPropertyFilters<T> = {
 	is_not_empty: true;
 };
 
+type DatePropertyFilters = {
+	equals: string;
+	before: string;
+	after: string;
+	on_or_before: string;
+	is_empty: true;
+	is_not_empty: true;
+	on_or_after: string;
+	past_week: {};
+	past_month: {};
+	past_year: {};
+	this_week: {};
+	next_week: {};
+	next_month: {};
+	next_year: {};
+};
+
 export type FilterOptions<T = []> = {
 	text: TextPropertyFilters;
 	title: TextPropertyFilters;
@@ -69,6 +87,7 @@ export type FilterOptions<T = []> = {
 	select: SelectPropertyFilters<T>;
 	multi_select: MultiSelectPropertyFilters<T>;
 	url: string;
+	date: DatePropertyFilters;
 };
 
 /**
