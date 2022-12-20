@@ -96,8 +96,7 @@ function databaseImportStatement(dbClass: importClassType) {
 			])
 		),
 
-		// We've setup paths to allow @notion-database access
-		ts.factory.createStringLiteral(`@notion-database/${dbClass.databaseId}`),
+		ts.factory.createStringLiteral(`./DatabaseTypes/${dbClass.databaseId}`),
 		undefined
 	);
 }

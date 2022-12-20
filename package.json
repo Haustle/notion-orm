@@ -21,10 +21,6 @@
   "dependencies": {
     "@notionhq/client": "^2.2.2",
     "dotenv": "^16.0.3",
-    "module-alias": "^2.2.2",
     "path": "^0.12.7"
-  },
-  "_moduleAliases": {
-      "@notion-database":"build/NotionActions/DatabaseTypes"
   }
 }
