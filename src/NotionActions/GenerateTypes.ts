@@ -227,8 +227,8 @@ function createOtherStringProp() {
 function createDateProperty(name: string) {
 	return ts.factory.createPropertySignature(
 		undefined,
-		ts.factory.createIdentifier("s"),
-		undefined,
+		ts.factory.createIdentifier(name),
+		ts.factory.createToken(ts.SyntaxKind.QuestionToken),
 		ts.factory.createTypeReferenceNode(
 			ts.factory.createIdentifier("Date"),
 			undefined
