@@ -100,16 +100,28 @@ function createNotionFile(nodeArr: ts.Node[]) {
 	);
 	const printer = ts.createPrinter();
 
-	const outputFile = printer.printList(
+	const typescriptCodeToString = printer.printList(
 		ts.ListFormat.MultiLine,
 		nodes,
 		sourceFile
 	);
 
-	const outputDir = path.join(__dirname, "../../src", "NotionActions");
+	const transpileToJavaScript = ts.transpile(typescriptCodeToString, {
+		module: ts.ModuleKind.None,
+		target: ts.ScriptTarget.ES2015,
+	});
+
+	const outputDir = path.join(__dirname, "../../build", "NotionActions");
 
 	if (!fs.existsSync(outputDir)) {
 		fs.mkdirSync(outputDir);
 	}
-	fs.writeFileSync(path.resolve(outputDir, "notion.ts"), outputFile);
+	fs.writeFileSync(
+		path.resolve(outputDir, "notion.ts"),
+		typescriptCodeToString
+	);
+	fs.writeFileSync(
+		path.resolve(outputDir, "notion.js"),
+		typescriptCodeToString
+	);
 }
