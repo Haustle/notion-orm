@@ -38,7 +38,7 @@ export const createDatabaseTypes = async (notionInfo: NotionConfigType) => {
 	const databaseNames: string[] = [];
 
 	// retrieve the database object
-	const databaseClassImports: ts.ImportDeclaration[] = [];
+	const databaseClassExports: ts.ExportDeclaration[] = [];
 	const databaseCamelizedNames: string[] = [];
 	const buildDir = path.join(
 		__dirname,
@@ -64,67 +64,27 @@ export const createDatabaseTypes = async (notionInfo: NotionConfigType) => {
 		databaseNames.push(databaseName);
 		databaseCamelizedNames.push(databaseClassName);
 
-		databaseClassImports.push(
-			databaseImportStatement({
+		databaseClassExports.push(
+			databaseExportStatement({
 				databaseClassName,
 				databaseId,
 			})
 		);
 	}
 
-	const nodeArr = [
-		...databaseClassImports,
-		mainNotionVariable(databaseCamelizedNames),
-	];
+	const nodeArr = [...databaseClassExports];
 	createNotionFile(nodeArr);
 	return { databaseNames };
 };
 
 // Create the import statement for notion.ts file
-function databaseImportStatement(dbClass: importClassType) {
-	return ts.factory.createImportDeclaration(
+function databaseExportStatement(dbClass: importClassType) {
+	return ts.factory.createExportDeclaration(
 		undefined,
-		ts.factory.createImportClause(
-			false,
-			undefined,
-			ts.factory.createNamedImports([
-				ts.factory.createImportSpecifier(
-					false,
-					undefined,
-					ts.factory.createIdentifier(dbClass.databaseClassName)
-				),
-			])
-		),
-
+		false,
+		undefined,
 		ts.factory.createStringLiteral(`./DatabaseTypes/${dbClass.databaseId}`),
 		undefined
-	);
-}
-
-function mainNotionVariable(databaseNames: string[]) {
-	return ts.factory.createVariableStatement(
-		[ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-		ts.factory.createVariableDeclarationList(
-			[
-				ts.factory.createVariableDeclaration(
-					ts.factory.createIdentifier("notion"),
-					undefined,
-					undefined,
-					ts.factory.createObjectLiteralExpression(
-						[
-							...databaseNames.map((name) =>
-								ts.factory.createShorthandPropertyAssignment(
-									ts.factory.createIdentifier(name),
-									undefined
-								)
-							),
-						],
-						true
-					)
-				),
-			],
-			ts.NodeFlags.Const
-		)
 	);
 }
 
