@@ -82,7 +82,13 @@ function databaseExportStatement(dbClass: importClassType) {
 	return ts.factory.createExportDeclaration(
 		undefined,
 		false,
-		undefined,
+		ts.factory.createNamedExports([
+			ts.factory.createExportSpecifier(
+				false,
+				undefined,
+				ts.factory.createIdentifier(dbClass.databaseClassName)
+			),
+		]),
 		ts.factory.createStringLiteral(`./DatabaseTypes/${dbClass.databaseId}`),
 		undefined
 	);
