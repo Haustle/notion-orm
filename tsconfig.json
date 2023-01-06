@@ -16,7 +16,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "paths": {
-      "@notion-database/*":["NotionActions/databases/*"]
+      "@notion-database/*":["databases/*"]
     }                               
   },
   "include": ["src"]
