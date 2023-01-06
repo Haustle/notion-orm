@@ -14,10 +14,7 @@
     "noImplicitAny": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true,
-    "paths": {
-      "@notion-database/*":["databases/*"]
-    }                               
+    "sourceMap": true,                             
   },
   "include": ["src"]
 }
