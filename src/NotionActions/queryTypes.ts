@@ -1,6 +1,23 @@
 /**
  * Column types' for all query options
  */
+// import { PageObjectResponse }
+
+import { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+
+type columnDiscriminatedUnionTypes = PageObjectResponse["properties"];
+type NotionColumnTypes =
+	columnDiscriminatedUnionTypes[keyof columnDiscriminatedUnionTypes]["type"];
+
+export type FilterOptionNames =
+	| "text"
+	| "title"
+	| "number"
+	| "checkbox"
+	| "select"
+	| "multi_select"
+	| "url"
+	| "date";
 
 type TextPropertyFilters = {
 	equals: string;
@@ -45,6 +62,23 @@ type MultiSelectPropertyFilters<T> = {
 	is_not_empty: true;
 };
 
+type DatePropertyFilters = {
+	equals: string;
+	before: string;
+	after: string;
+	on_or_before: string;
+	is_empty: true;
+	is_not_empty: true;
+	on_or_after: string;
+	past_week: {};
+	past_month: {};
+	past_year: {};
+	this_week: {};
+	next_week: {};
+	next_month: {};
+	next_year: {};
+};
+
 export type FilterOptions<T = []> = {
 	text: TextPropertyFilters;
 	title: TextPropertyFilters;
@@ -53,16 +87,8 @@ export type FilterOptions<T = []> = {
 	select: SelectPropertyFilters<T>;
 	multi_select: MultiSelectPropertyFilters<T>;
 	url: string;
+	date: DatePropertyFilters;
 };
-
-export type FilterOptionNames =
-	| "text"
-	| "title"
-	| "number"
-	| "checkbox"
-	| "select"
-	| "multi_select"
-	| "url";
 
 /**
  * Types to build query object user types out
@@ -72,15 +98,13 @@ const x = {
 	character: "multi_select",
 };
 
-type CollectionType = {
-	[key: string]: any;
-};
-
+type ColumnNameToNotionColumnType<T> = Record<keyof T, FilterOptionNames>;
+type ColumnNameToPossibleValues = Record<string, any>;
 // T is a column name to column type
 // Y is the collection type
 export type SingleFilter<
 	Y extends Record<string, any>,
-	T extends Record<keyof Y, FilterOptionNames>
+	T extends ColumnNameToNotionColumnType<Y>
 > = {
 	// Passing the type from collection
 	[Property in keyof Y]?: Partial<FilterOptions<Y[Property]>[T[Property]]>;

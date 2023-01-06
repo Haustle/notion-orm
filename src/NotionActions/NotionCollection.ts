@@ -55,7 +55,6 @@ export class CollectionActions<
 			const { type, columnName } = this.propNameToColumnName[propName];
 			const columnObject = getCall({
 				type,
-				// @ts-ignore
 				value: pageObject[propName],
 			});
 
@@ -88,7 +87,7 @@ export class CollectionActions<
 		console.log(apiQuery);
 	}
 
-	recursivelyBuildFilter(
+	private recursivelyBuildFilter(
 		queryFilter: QueryFilter<CollectionType, ColNameToType>
 	): apiFilterType {
 		// Need to loop because we don't kno

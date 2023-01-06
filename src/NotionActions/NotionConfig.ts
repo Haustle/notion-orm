@@ -1,13 +1,13 @@
 import { Client } from "@notionhq/client";
 import { GetDatabaseResponse } from "@notionhq/client/build/src/api-endpoints";
-import { generateTypes } from "./GenerateTypes";
+import { createTypescriptFileForDatabase } from "./GenerateTypes";
 import * as ts from "typescript";
 import fs from "fs";
 import path from "path";
 
 require("dotenv").config();
 
-type NotionConfigType = {
+export type NotionConfigType = {
 	auth: string;
 	databaseIds: string[];
 };
@@ -22,10 +22,12 @@ export const createDatabaseTypes = async (notionInfo: NotionConfigType) => {
 
 	// Making sure the user is passing valid arguments
 	if (!auth) {
-		throw Error("Please pass a valid Notion Integration Key");
+		console.error("Please pass a valid Notion Integration Key");
+		process.exit(1);
 	}
 	if (databaseIds.length < 0) {
-		throw Error("Please pass some database Ids");
+		console.error("Please pass some database Ids");
+		process.exit(1);
 	}
 
 	// Initialize client
@@ -33,10 +35,18 @@ export const createDatabaseTypes = async (notionInfo: NotionConfigType) => {
 		auth: auth,
 	});
 
-	// retrieve the database object
-	const collectionClassImports: ts.ImportDeclaration[] = [];
-	const collectionNames: string[] = [];
+	const databaseNames: string[] = [];
 
+	// retrieve the database object
+	const databaseClassExports: ts.ExportDeclaration[] = [];
+	const databaseCamelizedNames: string[] = [];
+	const buildDir = path.join(
+		__dirname,
+		"../../build",
+		"NotionActions",
+		"DatabaseTypes"
+	);
+	fs.rmdir(buildDir, () => console.log("Deleting current database types..."));
 	for (const database_id of databaseIds) {
 		let dbOjbect: GetDatabaseResponse;
 
@@ -46,80 +56,41 @@ export const createDatabaseTypes = async (notionInfo: NotionConfigType) => {
 				database_id,
 			});
 		} catch (e) {
-			return;
+			console.error(e);
+			return { databaseNames: [] };
 		}
-		const { databaseClassName, databaseId } = await generateTypes(dbOjbect);
-		console.log(`database name: ${databaseClassName}`);
-		collectionNames.push(databaseClassName);
+		const { databaseClassName, databaseId, databaseName } =
+			await createTypescriptFileForDatabase(dbOjbect);
+		databaseNames.push(databaseName);
+		databaseCamelizedNames.push(databaseClassName);
 
-		collectionClassImports.push(
-			databaseImportStatement({
+		databaseClassExports.push(
+			databaseExportStatement({
 				databaseClassName,
 				databaseId,
 			})
 		);
-		console.log(collectionClassImports.length);
 	}
 
-	const nodeArr = [
-		...collectionClassImports,
-		mainNotionVariable(collectionNames),
-	];
-
-	console.log(`num imports: ${collectionClassImports.length}`);
-	console.log(`num of names: ${collectionNames.length}`);
-
+	const nodeArr = [...databaseClassExports];
 	createNotionFile(nodeArr);
-
-	console.log("after");
+	return { databaseNames };
 };
 
 // Create the import statement for notion.ts file
-function databaseImportStatement(dbClass: importClassType) {
-	return ts.factory.createImportDeclaration(
+function databaseExportStatement(dbClass: importClassType) {
+	return ts.factory.createExportDeclaration(
 		undefined,
-		ts.factory.createImportClause(
-			false,
-			undefined,
-			ts.factory.createNamedImports([
-				ts.factory.createImportSpecifier(
-					false,
-					undefined,
-					ts.factory.createIdentifier(dbClass.databaseClassName)
-				),
-			])
-		),
-
-		// We've setup paths to allow @notion-database access
-		ts.factory.createStringLiteral(`@notion-database/${dbClass.databaseId}`),
+		false,
+		ts.factory.createNamedExports([
+			ts.factory.createExportSpecifier(
+				false,
+				undefined,
+				ts.factory.createIdentifier(dbClass.databaseClassName)
+			),
+		]),
+		ts.factory.createStringLiteral(`./DatabaseTypes/${dbClass.databaseId}`),
 		undefined
-	);
-}
-
-function mainNotionVariable(databaseNames: string[]) {
-	return ts.factory.createVariableStatement(
-		[ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-		ts.factory.createVariableDeclarationList(
-			[
-				ts.factory.createVariableDeclaration(
-					ts.factory.createIdentifier("notion"),
-					undefined,
-					undefined,
-					ts.factory.createObjectLiteralExpression(
-						[
-							...databaseNames.map((name) =>
-								ts.factory.createShorthandPropertyAssignment(
-									ts.factory.createIdentifier(name),
-									undefined
-								)
-							),
-						],
-						true
-					)
-				),
-			],
-			ts.NodeFlags.Const
-		)
 	);
 }
 
@@ -135,16 +106,28 @@ function createNotionFile(nodeArr: ts.Node[]) {
 	);
 	const printer = ts.createPrinter();
 
-	const outputFile = printer.printList(
+	const typescriptCodeToString = printer.printList(
 		ts.ListFormat.MultiLine,
 		nodes,
 		sourceFile
 	);
 
-	const outputDir = path.join(__dirname, "../../src", "NotionActions");
+	const transpileToJavaScript = ts.transpile(typescriptCodeToString, {
+		module: ts.ModuleKind.None,
+		target: ts.ScriptTarget.ES2015,
+	});
+
+	const outputDir = path.join(__dirname, "../../build", "NotionActions");
 
 	if (!fs.existsSync(outputDir)) {
 		fs.mkdirSync(outputDir);
 	}
-	fs.writeFileSync(path.resolve(outputDir, "notion.ts"), outputFile);
+	fs.writeFileSync(
+		path.resolve(outputDir, "notion.ts"),
+		typescriptCodeToString
+	);
+	fs.writeFileSync(
+		path.resolve(outputDir, "notion.js"),
+		typescriptCodeToString
+	);
 }
