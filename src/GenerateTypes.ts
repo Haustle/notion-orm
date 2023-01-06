@@ -369,7 +369,7 @@ function importCollectionClass() {
 				),
 			])
 		),
-		ts.factory.createStringLiteral("../NotionActions/NotionCollection"),
+		ts.factory.createStringLiteral("../src/NotionCollection"),
 		undefined
 	);
 }
