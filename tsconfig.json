@@ -7,7 +7,7 @@
     "rootDir": "src",                                    
     "resolveJsonModule": true,                           
     "allowJs": true,                                     
-    "outDir": "build",                                    
+    "outDir": "build/NotionActions",                                    
     "esModuleInterop": true,                             
     "strict": true,      
     "baseUrl": "src",                                
