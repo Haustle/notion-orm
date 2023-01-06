@@ -124,12 +124,7 @@ export async function createTypescriptFileForDatabase(
 	});
 
 	// Create our output folder
-	const outputDir = path.join(
-		__dirname,
-		"../../build",
-		"NotionActions",
-		"DatabaseTypes"
-	);
+	const outputDir = path.join(__dirname, "../../build", "databases");
 	if (!fs.existsSync(outputDir)) {
 		fs.mkdirSync(outputDir);
 	}
@@ -374,7 +369,7 @@ function importCollectionClass() {
 				),
 			])
 		),
-		ts.factory.createStringLiteral("../NotionCollection"),
+		ts.factory.createStringLiteral("../NotionActions/NotionCollection"),
 		undefined
 	);
 }

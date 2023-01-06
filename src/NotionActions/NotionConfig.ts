@@ -40,12 +40,7 @@ export const createDatabaseTypes = async (notionInfo: NotionConfigType) => {
 	// retrieve the database object
 	const databaseClassExports: ts.ExportDeclaration[] = [];
 	const databaseCamelizedNames: string[] = [];
-	const buildDir = path.join(
-		__dirname,
-		"../../build",
-		"NotionActions",
-		"DatabaseTypes"
-	);
+	const buildDir = path.join(__dirname, "../../build", "databases");
 	fs.rmdir(buildDir, () => console.log("Deleting current database types..."));
 	for (const database_id of databaseIds) {
 		let dbOjbect: GetDatabaseResponse;
@@ -89,7 +84,7 @@ function databaseExportStatement(dbClass: importClassType) {
 				ts.factory.createIdentifier(dbClass.databaseClassName)
 			),
 		]),
-		ts.factory.createStringLiteral(`./DatabaseTypes/${dbClass.databaseId}`),
+		ts.factory.createStringLiteral(`./${dbClass.databaseId}`),
 		undefined
 	);
 }
@@ -117,7 +112,7 @@ function createNotionFile(nodeArr: ts.Node[]) {
 		target: ts.ScriptTarget.ES2015,
 	});
 
-	const outputDir = path.join(__dirname, "../../build", "NotionActions");
+	const outputDir = path.join(__dirname, "../../build", "databases");
 
 	if (!fs.existsSync(outputDir)) {
 		fs.mkdirSync(outputDir);
