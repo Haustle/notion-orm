@@ -12,8 +12,8 @@ export type NotionConfigType = {
 	databaseIds: string[];
 };
 
-export const createDatabaseTypes = async (notionInfo: NotionConfigType) => {
-	const { auth, databaseIds } = notionInfo;
+export const createDatabaseTypes = async (args: NotionConfigType) => {
+	const { auth, databaseIds } = args;
 
 	// Making sure the user is passing valid arguments
 	if (!auth) {

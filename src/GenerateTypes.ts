@@ -57,7 +57,10 @@ export async function createTypescriptFileForDatabase(
 		if (columnType === "title" || columnType === "rich_text") {
 			// add text column to collection type
 			databaseColumnTypeProps.push(
-				createTextProperty(camelizedColumnName, columnType === "title")
+				createTextProperty({
+					name: camelizedColumnName,
+					isTitle: columnType === "title",
+				})
 			);
 		} else if (columnType === "number") {
 			// add number column to collection type
@@ -65,7 +68,7 @@ export async function createTypescriptFileForDatabase(
 		} else if (columnType === "url") {
 			// add url column to collection type
 			databaseColumnTypeProps.push(
-				createTextProperty(camelizedColumnName, false)
+				createTextProperty({ name: camelizedColumnName, isTitle: false })
 			);
 		} else if (columnType === "date") {
 			// add Date column to collection type
@@ -74,12 +77,11 @@ export async function createTypescriptFileForDatabase(
 			// @ts-ignore
 			const options = value[columnType].options.map((x) => x.name);
 			databaseColumnTypeProps.push(
-				createMultiOptionProp(
-					camelizedColumnName,
+				createMultiOptionProp({
+					name: camelizedColumnName,
 					options,
-					// This determines whether the property needs to be a union or a union array
-					columnType === "multi_select"
-				)
+					isArray: columnType === "multi_select", // Union or Union Array
+				})
 			);
 		}
 	});
@@ -94,12 +96,12 @@ export async function createTypescriptFileForDatabase(
 
 	// Top level non-nested variable, functions, types for database files
 	const TsNodesForDatabaseFile = ts.factory.createNodeArray([
-		importCollectionClass(),
+		createDatabaseActionsClassImport(),
 		createDatabaseIdVariable(databaseId),
 		DatabaseSchemaType,
-		mapPropNameToColumnDetails(propNameToColumnName),
-		ColumnNameToColumnType(),
-		exportDatabaseActions(databaseClassName),
+		createColumnNameToColumnProperties(propNameToColumnName),
+		createColumnNameToColumnType(),
+		createDatabaseClassExport({ databaseName: databaseClassName }),
 	]);
 
 	const sourceFile = ts.createSourceFile(
@@ -116,13 +118,12 @@ export async function createTypescriptFileForDatabase(
 		TsNodesForDatabaseFile,
 		sourceFile
 	);
-
 	const transpileToJavaScript = ts.transpile(typescriptCodeToString, {
 		module: ts.ModuleKind.None,
 		target: ts.ScriptTarget.ES2015,
 	});
 
-	// Create our output folder
+	// Create databases output folder
 	if (!fs.existsSync(DATABASES_DIR)) {
 		fs.mkdirSync(DATABASES_DIR);
 	}
@@ -141,7 +142,8 @@ export async function createTypescriptFileForDatabase(
 }
 
 // generate text property
-function createTextProperty(name: string, isTitle: boolean) {
+function createTextProperty(args: { name: string; isTitle: boolean }) {
+	const { name, isTitle } = args;
 	const text = ts.factory.createPropertySignature(
 		undefined,
 		ts.factory.createIdentifier(name),
@@ -166,28 +168,20 @@ function createNumberProperty(name: string) {
 }
 
 /**
- *
- * @param name name of property
- * @param options
- * @param array
- * @returns
- *
  * For selects and multi-select collection properties
- *
  * array = true for multi-select
- *
- * name = ("x" | "y" | "z")[]
  */
-function createMultiOptionProp(
-	name: string,
-	options: string[],
-	array: boolean
-) {
+function createMultiOptionProp(args: {
+	name: string;
+	options: string[];
+	isArray: boolean;
+}) {
+	const { isArray, name, options } = args;
 	return ts.factory.createPropertySignature(
 		undefined,
 		ts.factory.createIdentifier(name),
 		ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-		array
+		isArray
 			? ts.factory.createArrayTypeNode(
 					ts.factory.createParenthesizedType(
 						ts.factory.createUnionTypeNode([
@@ -256,7 +250,7 @@ function createDatabaseIdVariable(databaseId: string) {
  *
  * Example
  *
- * const propMap = {
+ * const columnNameToColumnProperties = {
  *
  *      "bookRating": {
  *          columnName: "Book Rating",
@@ -268,14 +262,12 @@ function createDatabaseIdVariable(databaseId: string) {
  *      }
  *
  * }
- * @param colMap
- * @returns
  */
-function mapPropNameToColumnDetails(colMap: propNameToColumnNameType) {
+function createColumnNameToColumnProperties(colMap: propNameToColumnNameType) {
 	return ts.factory.createVariableDeclarationList(
 		[
 			ts.factory.createVariableDeclaration(
-				ts.factory.createIdentifier("propMap"),
+				ts.factory.createIdentifier("columnNameToColumnProperties"),
 				undefined,
 				undefined,
 				ts.factory.createAsExpression(
@@ -313,7 +305,7 @@ function mapPropNameToColumnDetails(colMap: propNameToColumnNameType) {
 	);
 }
 
-function ColumnNameToColumnType() {
+function createColumnNameToColumnType() {
 	return ts.factory.createTypeAliasDeclaration(
 		undefined,
 		ts.factory.createIdentifier("ColumnNameToColumnType"),
@@ -326,7 +318,7 @@ function ColumnNameToColumnType() {
 				ts.factory.createTypeOperatorNode(
 					ts.SyntaxKind.KeyOfKeyword,
 					ts.factory.createTypeQueryNode(
-						ts.factory.createIdentifier("propMap"),
+						ts.factory.createIdentifier("columnNameToColumnProperties"),
 						undefined
 					)
 				),
@@ -337,7 +329,7 @@ function ColumnNameToColumnType() {
 			ts.factory.createIndexedAccessTypeNode(
 				ts.factory.createIndexedAccessTypeNode(
 					ts.factory.createTypeQueryNode(
-						ts.factory.createIdentifier("propMap"),
+						ts.factory.createIdentifier("columnNameToColumnProperties"),
 						undefined
 					),
 					ts.factory.createTypeReferenceNode(
@@ -353,8 +345,8 @@ function ColumnNameToColumnType() {
 	);
 }
 
-// Need to import the class responsible for adding and querying the database
-function importCollectionClass() {
+// Need to import the database class used to execute database actions (adding + querying)
+function createDatabaseActionsClassImport() {
 	return ts.factory.createImportDeclaration(
 		undefined,
 		ts.factory.createImportClause(
@@ -373,16 +365,12 @@ function importCollectionClass() {
 	);
 }
 
-// We export the database with the class above.
-// export
-
 /**
- * We export the database with
- * @param databaseName
- *
- * const <datbase-name> = new DatabaseActions<DatabaseSchemaType>(datbaseId, propMap)
+ * Create export statement for the database class
+ * export const <databaseName> = new DatabaseActions<DatabaseSchemaType>(datbaseId, columnNameToColumnProperties)
  */
-function exportDatabaseActions(databaseName: string) {
+function createDatabaseClassExport(args: { databaseName: string }) {
+	const { databaseName } = args;
 	return ts.factory.createVariableStatement(
 		[ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
 		ts.factory.createVariableDeclarationList(
@@ -405,7 +393,7 @@ function exportDatabaseActions(databaseName: string) {
 						],
 						[
 							ts.factory.createIdentifier("databaseId"),
-							ts.factory.createIdentifier("propMap"),
+							ts.factory.createIdentifier("columnNameToColumnProperties"),
 						]
 					)
 				),
