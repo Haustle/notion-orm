@@ -129,11 +129,11 @@ export async function createTypescriptFileForDatabase(
 
 	// Create TypeScript and JavaScript files
 	fs.writeFileSync(
-		path.resolve(DATABASES_DIR, `${databaseId}.ts`),
+		path.resolve(DATABASES_DIR, `${databaseClassName}.ts`),
 		typescriptCodeToString
 	);
 	fs.writeFileSync(
-		path.resolve(DATABASES_DIR, `${databaseId}.js`),
+		path.resolve(DATABASES_DIR, `${databaseClassName}.js`),
 		transpileToJavaScript
 	);
 

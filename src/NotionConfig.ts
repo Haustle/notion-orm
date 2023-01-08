@@ -12,11 +12,6 @@ export type NotionConfigType = {
 	databaseIds: string[];
 };
 
-type importClassType = {
-	databaseId: string;
-	databaseClassName: string;
-};
-
 export const createDatabaseTypes = async (notionInfo: NotionConfigType) => {
 	const { auth, databaseIds } = notionInfo;
 
@@ -61,7 +56,6 @@ export const createDatabaseTypes = async (notionInfo: NotionConfigType) => {
 			databaseClassExportStatements.push(
 				databaseExportStatement({
 					databaseClassName,
-					databaseId,
 				})
 			);
 		} catch (e) {
@@ -71,12 +65,15 @@ export const createDatabaseTypes = async (notionInfo: NotionConfigType) => {
 	}
 
 	// Create a file that exports all databases
-	createNotionFile([...databaseClassExportStatements]);
+	createNotionFile({
+		databaseClassExportStatements,
+	});
 	return { databaseNames };
 };
 
 // Create the import statement for notion.ts file
-function databaseExportStatement(dbClass: importClassType) {
+function databaseExportStatement(args: { databaseClassName: string }) {
+	const { databaseClassName } = args;
 	return ts.factory.createExportDeclaration(
 		undefined,
 		false,
@@ -84,17 +81,18 @@ function databaseExportStatement(dbClass: importClassType) {
 			ts.factory.createExportSpecifier(
 				false,
 				undefined,
-				ts.factory.createIdentifier(dbClass.databaseClassName)
+				ts.factory.createIdentifier(databaseClassName)
 			),
 		]),
-		ts.factory.createStringLiteral(`./${dbClass.databaseId}`),
+		ts.factory.createStringLiteral(`./${databaseClassName}`),
 		undefined
 	);
 }
 
 // Creates file that import all generated notion database Ids
-function createNotionFile(nodeArr: ts.Node[]) {
-	const nodes = ts.factory.createNodeArray(nodeArr);
+function createNotionFile(args: { databaseClassExportStatements: ts.Node[] }) {
+	const { databaseClassExportStatements } = args;
+	const nodes = ts.factory.createNodeArray(databaseClassExportStatements);
 	const sourceFile = ts.createSourceFile(
 		"placeholder.ts",
 		"",
