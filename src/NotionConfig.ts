@@ -4,7 +4,6 @@ import { createTypescriptFileForDatabase } from "./GenerateTypes";
 import * as ts from "typescript";
 import fs from "fs";
 import path from "path";
-require("dotenv").config();
 
 export const DATABASES_DIR = path.join(__dirname, "../../build", "databases");
 

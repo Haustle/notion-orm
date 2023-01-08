@@ -14,7 +14,6 @@ import {
 	QueryFilter,
 	SingleFilter,
 } from "./queryTypes";
-require("dotenv").config();
 
 export type propNameToColumnNameType = Record<
 	string,

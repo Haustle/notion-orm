@@ -3,7 +3,6 @@
 import fs from "fs";
 import { createDatabaseTypes } from "./NotionConfig";
 import path from "path";
-require("dotenv").config();
 
 async function main() {
 	const args = process.argv.slice(2);
