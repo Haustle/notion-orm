@@ -5,6 +5,8 @@ import {
 import { Client } from "@notionhq/client";
 import { getCall } from "./BuildCall";
 import { PropertyType } from "./GenerateTypes";
+import path from "path";
+import { NotionConfigType } from "./NotionConfig";
 import {
 	apiFilterType,
 	apiSingleFilter,
@@ -20,6 +22,12 @@ export type propNameToColumnNameType = Record<
 	{ columnName: string; type: PropertyType }
 >;
 
+// Import auth key from config file
+const { auth }: NotionConfigType = require(path.join(
+	process.cwd(),
+	"notion.config"
+));
+
 export class DatabaseActions<
 	DatabaseSchemaType extends Record<string, any>,
 	ColumnNameToColumnType extends Record<
@@ -28,7 +36,7 @@ export class DatabaseActions<
 	>
 > {
 	private NotionClient: Client = new Client({
-		auth: process.env.NOTION_KEY,
+		auth,
 	});
 	private databaseId: string;
 	private propNameToColumnName: propNameToColumnNameType;

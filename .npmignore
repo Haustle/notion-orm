@@ -1,3 +1,4 @@
 .env
 .gitignore
 tsconfig.json
+databases/*
