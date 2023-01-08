@@ -4,7 +4,7 @@
     "target": "ES6",                                 
     "lib": ["es6"],                                      
     "module": "commonjs",                                
-    "rootDir": "src",                                    
+    "rootDir": ".",                                    
     "resolveJsonModule": true,                           
     "allowJs": true,                                     
     "outDir": "build",                                    
@@ -14,10 +14,7 @@
     "noImplicitAny": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true,
-    "paths": {
-      "@notion-database/*":["NotionActions/DatabaseTypes/*"]
-    }                               
+    "sourceMap": true,                             
   },
   "include": ["src"]
 }

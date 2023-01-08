@@ -1,13 +1,13 @@
 {
   "name": "@haustle/notion-orm",
-  "version": "0.0.36",
-  "description": "tool to bring collection types to typescript",
-  "main": "build/index.js",
+  "version": "0.0.39",
+  "description": "tool to bring notion databases schemas/types to typescript",
+  "main": "build/src/cli.js",
   "bin": {
-    "notion": "build/index.js"
+    "notion": "build/src/cli.js"
   },
   "scripts": {
-    "start": "npx tsc && node build/index.js",
+    "start": "npx tsc && node build/src/index.js",
     "build": "rm -rf build && tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "refresh": "rm -rf ./node_modules ./package-lock.json && npm install"
@@ -19,8 +19,6 @@
     "typescript": "^4.8.4"
   },
   "dependencies": {
-    "@notionhq/client": "^2.2.2",
-    "dotenv": "^16.0.3",
-    "path": "^0.12.7"
+    "@notionhq/client": "^2.2.2"
   }
 }

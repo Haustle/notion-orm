@@ -5,6 +5,7 @@ import {
 import * as ts from "typescript";
 import fs from "fs";
 import path from "path";
+import { DATABASES_DIR } from "./NotionConfig";
 
 // This can be grabbed from // api-endpoints.d.ts with some work
 const propertyArr = [
@@ -84,27 +85,25 @@ export async function createTypescriptFileForDatabase(
 	});
 
 	// Object type that represents the database schema
-	const CollectionType = ts.factory.createTypeAliasDeclaration(
+	const DatabaseSchemaType = ts.factory.createTypeAliasDeclaration(
 		undefined,
-		ts.factory.createIdentifier("CollectionType"),
+		ts.factory.createIdentifier("DatabaseSchemaType"),
 		undefined,
 		ts.factory.createTypeLiteralNode(databaseColumnTypeProps)
 	);
 
-	// Top level non-nested variable, functions, types
-	const nodeArr = [
+	// Top level non-nested variable, functions, types for database files
+	const TsNodesForDatabaseFile = ts.factory.createNodeArray([
 		importCollectionClass(),
 		createDatabaseIdVariable(databaseId),
-		CollectionType,
+		DatabaseSchemaType,
 		mapPropNameToColumnDetails(propNameToColumnName),
-		ColNameToType(),
-		exportCollectionActions(databaseClassName),
-	];
-
-	const nodes = ts.factory.createNodeArray(nodeArr);
+		ColumnNameToColumnType(),
+		exportDatabaseActions(databaseClassName),
+	]);
 
 	const sourceFile = ts.createSourceFile(
-		"placeholder.ts",
+		"",
 		"",
 		ts.ScriptTarget.ESNext,
 		true,
@@ -114,7 +113,7 @@ export async function createTypescriptFileForDatabase(
 
 	const typescriptCodeToString = printer.printList(
 		ts.ListFormat.MultiLine,
-		nodes,
+		TsNodesForDatabaseFile,
 		sourceFile
 	);
 
@@ -124,22 +123,17 @@ export async function createTypescriptFileForDatabase(
 	});
 
 	// Create our output folder
-	const outputDir = path.join(
-		__dirname,
-		"../../build",
-		"NotionActions",
-		"DatabaseTypes"
-	);
-	if (!fs.existsSync(outputDir)) {
-		fs.mkdirSync(outputDir);
+	if (!fs.existsSync(DATABASES_DIR)) {
+		fs.mkdirSync(DATABASES_DIR);
 	}
+
+	// Create TypeScript and JavaScript files
 	fs.writeFileSync(
-		path.resolve(outputDir, `${databaseId}.ts`),
+		path.resolve(DATABASES_DIR, `${databaseId}.ts`),
 		typescriptCodeToString
 	);
-
 	fs.writeFileSync(
-		path.resolve(outputDir, `${databaseId}.js`),
+		path.resolve(DATABASES_DIR, `${databaseId}.js`),
 		transpileToJavaScript
 	);
 
@@ -319,10 +313,10 @@ function mapPropNameToColumnDetails(colMap: propNameToColumnNameType) {
 	);
 }
 
-function ColNameToType() {
+function ColumnNameToColumnType() {
 	return ts.factory.createTypeAliasDeclaration(
 		undefined,
-		ts.factory.createIdentifier("ColNameToType"),
+		ts.factory.createIdentifier("ColumnNameToColumnType"),
 		undefined,
 		ts.factory.createMappedTypeNode(
 			undefined,
@@ -370,11 +364,11 @@ function importCollectionClass() {
 				ts.factory.createImportSpecifier(
 					false,
 					undefined,
-					ts.factory.createIdentifier("CollectionActions")
+					ts.factory.createIdentifier("DatabaseActions")
 				),
 			])
 		),
-		ts.factory.createStringLiteral("../NotionCollection"),
+		ts.factory.createStringLiteral("../src/DatabaseActions"),
 		undefined
 	);
 }
@@ -386,9 +380,9 @@ function importCollectionClass() {
  * We export the database with
  * @param databaseName
  *
- * const <datbase-name> = new CollectionActions<CollectionType>(datbaseId, propMap)
+ * const <datbase-name> = new DatabaseActions<DatabaseSchemaType>(datbaseId, propMap)
  */
-function exportCollectionActions(databaseName: string) {
+function exportDatabaseActions(databaseName: string) {
 	return ts.factory.createVariableStatement(
 		[ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
 		ts.factory.createVariableDeclarationList(
@@ -398,14 +392,14 @@ function exportCollectionActions(databaseName: string) {
 					undefined,
 					undefined,
 					ts.factory.createNewExpression(
-						ts.factory.createIdentifier("CollectionActions"),
+						ts.factory.createIdentifier("DatabaseActions"),
 						[
 							ts.factory.createTypeReferenceNode(
-								ts.factory.createIdentifier("CollectionType"),
+								ts.factory.createIdentifier("DatabaseSchemaType"),
 								undefined
 							),
 							ts.factory.createTypeReferenceNode(
-								ts.factory.createIdentifier("ColNameToType"),
+								ts.factory.createIdentifier("ColumnNameToColumnType"),
 								undefined
 							),
 						],

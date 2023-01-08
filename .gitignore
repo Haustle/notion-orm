@@ -1,6 +1,4 @@
 node_modules
 build
 .env
-exam_return_database_obj.js
 package-lock.json
-src/NotionActions/DatabaseTypes/*
