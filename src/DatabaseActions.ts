@@ -21,9 +21,12 @@ export type propNameToColumnNameType = Record<
 	{ columnName: string; type: PropertyType }
 >;
 
-export class CollectionActions<
-	CollectionType extends Record<string, any>,
-	ColNameToType extends Record<keyof CollectionType, FilterOptionNames>
+export class DatabaseActions<
+	DatabaseSchemaType extends Record<string, any>,
+	ColumnNameToColumnType extends Record<
+		keyof DatabaseSchemaType,
+		FilterOptionNames
+	>
 > {
 	private NotionClient: Client = new Client({
 		auth: process.env.NOTION_KEY,
@@ -42,7 +45,7 @@ export class CollectionActions<
 	}
 
 	// Add page to a database
-	async add(pageObject: CollectionType) {
+	async add(pageObject: DatabaseSchemaType) {
 		const callBody: CreatePageParameters = {
 			parent: {
 				database_id: this.databaseId,
@@ -66,7 +69,7 @@ export class CollectionActions<
 	}
 
 	// Look for page inside the database
-	async query(query: Query<CollectionType, ColNameToType>) {
+	async query(query: Query<DatabaseSchemaType, ColumnNameToColumnType>) {
 		const queryCall: QueryDatabaseParameters = {
 			database_id: this.databaseId,
 		};
@@ -88,18 +91,21 @@ export class CollectionActions<
 	}
 
 	private recursivelyBuildFilter(
-		queryFilter: QueryFilter<CollectionType, ColNameToType>
+		queryFilter: QueryFilter<DatabaseSchemaType, ColumnNameToColumnType>
 	): apiFilterType {
 		// Need to loop because we don't kno
 		for (const prop in queryFilter) {
 			// if the filter is "and" || "or" we need to recursively
 			if (prop === "and" || prop === "or") {
-				const compoundFilters: QueryFilter<CollectionType, ColNameToType>[] =
+				const compoundFilters: QueryFilter<
+					DatabaseSchemaType,
+					ColumnNameToColumnType
+				>[] =
 					// @ts-ignore
 					queryFilter[prop];
 
 				const compoundApiFilters = compoundFilters.map(
-					(i: QueryFilter<CollectionType, ColNameToType>) => {
+					(i: QueryFilter<DatabaseSchemaType, ColumnNameToColumnType>) => {
 						return this.recursivelyBuildFilter(i);
 					}
 				);
@@ -118,7 +124,9 @@ export class CollectionActions<
 				};
 
 				//@ts-ignore
-				temp[propType] = (queryFilter as SingleFilter<ColNameToType>)[prop];
+				temp[propType] = (queryFilter as SingleFilter<ColumnNameToColumnType>)[
+					prop
+				];
 				return temp;
 			}
 		}
