@@ -109,7 +109,7 @@ function createNotionFile(args: { databaseClassExportStatements: ts.Node[] }) {
 	);
 
 	const transpileToJavaScript = ts.transpile(typescriptCodeToString, {
-		module: ts.ModuleKind.None,
+		module: ts.ModuleKind.CommonJS,
 		target: ts.ScriptTarget.ES2015,
 	});
 
@@ -119,11 +119,11 @@ function createNotionFile(args: { databaseClassExportStatements: ts.Node[] }) {
 
 	// Create TypeScript and JavaScript file
 	fs.writeFileSync(
-		path.resolve(DATABASES_DIR, "notion.ts"),
+		path.resolve(DATABASES_DIR, "index.ts"),
 		typescriptCodeToString
 	);
 	fs.writeFileSync(
-		path.resolve(DATABASES_DIR, "notion.js"),
-		typescriptCodeToString
+		path.resolve(DATABASES_DIR, "index.js"),
+		transpileToJavaScript
 	);
 }
