@@ -120,7 +120,7 @@ export async function createTypescriptFileForDatabase(
 	);
 	const transpileToJavaScript = ts.transpile(typescriptCodeToString, {
 		module: ts.ModuleKind.None,
-		target: ts.ScriptTarget.ES2015,
+		target: ts.ScriptTarget.ESNext,
 	});
 
 	// Create databases output folder
