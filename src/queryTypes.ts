@@ -10,7 +10,7 @@ type NotionColumnTypes =
 	columnDiscriminatedUnionTypes[keyof columnDiscriminatedUnionTypes]["type"];
 
 export type FilterOptionNames =
-	| "text"
+	| "rich_text"
 	| "title"
 	| "number"
 	| "checkbox"
@@ -80,7 +80,7 @@ type DatePropertyFilters = {
 };
 
 export type FilterOptions<T = []> = {
-	text: TextPropertyFilters;
+	rich_text: TextPropertyFilters;
 	title: TextPropertyFilters;
 	number: NumberPropertyFilters;
 	checkbox: CheckBoxPropertyFilters;

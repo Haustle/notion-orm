@@ -18,7 +18,7 @@ export function getCall(args: {
 		return checkboxCall({ checked: value });
 	} else if (type === "title" && typeof value === "string") {
 		return titleCall({ title: value });
-	} else if (type === "text" && typeof value === "string") {
+	} else if (type === "rich_text" && typeof value === "string") {
 		return textCall({ text: value });
 	}
 }

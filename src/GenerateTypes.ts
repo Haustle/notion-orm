@@ -5,11 +5,11 @@ import {
 import * as ts from "typescript";
 import fs from "fs";
 import path from "path";
-import { DATABASES_DIR } from "./NotionConfig";
+import { DATABASES_DIR } from "./index";
 
 // This can be grabbed from // api-endpoints.d.ts with some work
 const propertyArr = [
-	"text",
+	"rich_text",
 	"select",
 	"title",
 	"number",

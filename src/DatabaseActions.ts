@@ -6,7 +6,7 @@ import { Client } from "@notionhq/client";
 import { getCall } from "./BuildCall";
 import { PropertyType } from "./GenerateTypes";
 import path from "path";
-import { NotionConfigType } from "./NotionConfig";
+import { NotionConfigType } from "./index";
 import {
 	apiFilterType,
 	apiSingleFilter,
