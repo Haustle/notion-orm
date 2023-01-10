@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 import fs from "fs";
-import { createDatabaseTypes } from "./NotionConfig";
+import { createDatabaseTypes } from "./index";
 import path from "path";
 
 async function main() {
