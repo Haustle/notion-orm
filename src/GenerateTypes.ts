@@ -6,22 +6,11 @@ import * as ts from "typescript";
 import fs from "fs";
 import path from "path";
 import { DATABASES_DIR } from "./index";
-
-// This can be grabbed from // api-endpoints.d.ts with some work
-const propertyArr = [
-	"rich_text",
-	"select",
-	"title",
-	"number",
-	"multi_select",
-	"checkbox",
-	"url",
-];
-export type PropertyType = typeof propertyArr[number];
+import { NotionColumnTypes } from "queryTypes";
 
 type propNameToColumnNameType = Record<
 	string,
-	{ columnName: string; type: PropertyType }
+	{ columnName: string; type: NotionColumnTypes }
 >;
 
 /* 
