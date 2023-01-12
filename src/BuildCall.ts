@@ -1,11 +1,10 @@
-import { PropertyType } from "./GenerateTypes";
+import { SupportedNotionColumnTypes } from "./queryTypes";
 
 export function getCall(args: {
-	type: PropertyType;
+	type: SupportedNotionColumnTypes;
 	value: string | number | boolean;
 }) {
 	const { type, value } = args;
-	console.log(type, value, typeof value);
 	if (type === "select" && typeof value === "string") {
 		return selectCall({ value });
 	} else if (type === "multi_select" && Array.isArray(value)) {
@@ -18,8 +17,12 @@ export function getCall(args: {
 		return checkboxCall({ checked: value });
 	} else if (type === "title" && typeof value === "string") {
 		return titleCall({ title: value });
-	} else if (type === "text" && typeof value === "string") {
+	} else if (type === "rich_text" && typeof value === "string") {
 		return textCall({ text: value });
+	} else {
+		console.error(
+			`'[@haustle/notion-orm] ${type}' column type currently not supported`
+		);
 	}
 }
 

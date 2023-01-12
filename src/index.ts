@@ -1,3 +1,7 @@
+/**
+ * Responsible for consuming notion.config.js
+ */
+
 import { Client } from "@notionhq/client";
 import { GetDatabaseResponse } from "@notionhq/client/build/src/api-endpoints";
 import { createTypescriptFileForDatabase } from "./GenerateTypes";
@@ -65,13 +69,14 @@ export const createDatabaseTypes = async (args: NotionConfigType) => {
 	}
 
 	// Create a file that exports all databases
-	createNotionFile({
+	createDatabaseBarrelFile({
 		databaseClassExportStatements,
 	});
 	return { databaseNames };
 };
 
-// Create the import statement for notion.ts file
+// Create the export statement for database file file
+// export { databseName } from "./databaseName"
 function databaseExportStatement(args: { databaseClassName: string }) {
 	const { databaseClassName } = args;
 	return ts.factory.createExportDeclaration(
@@ -90,7 +95,9 @@ function databaseExportStatement(args: { databaseClassName: string }) {
 }
 
 // Creates file that import all generated notion database Ids
-function createNotionFile(args: { databaseClassExportStatements: ts.Node[] }) {
+function createDatabaseBarrelFile(args: {
+	databaseClassExportStatements: ts.Node[];
+}) {
 	const { databaseClassExportStatements } = args;
 	const nodes = ts.factory.createNodeArray(databaseClassExportStatements);
 	const sourceFile = ts.createSourceFile(
@@ -109,7 +116,7 @@ function createNotionFile(args: { databaseClassExportStatements: ts.Node[] }) {
 	);
 
 	const transpileToJavaScript = ts.transpile(typescriptCodeToString, {
-		module: ts.ModuleKind.CommonJS,
+		module: ts.ModuleKind.None,
 		target: ts.ScriptTarget.ES2015,
 	});
 
@@ -119,11 +126,11 @@ function createNotionFile(args: { databaseClassExportStatements: ts.Node[] }) {
 
 	// Create TypeScript and JavaScript file
 	fs.writeFileSync(
-		path.resolve(DATABASES_DIR, "index.ts"),
+		path.resolve(DATABASES_DIR, "notion.ts"),
 		typescriptCodeToString
 	);
 	fs.writeFileSync(
-		path.resolve(DATABASES_DIR, "index.js"),
-		transpileToJavaScript
+		path.resolve(DATABASES_DIR, "notion.js"),
+		typescriptCodeToString
 	);
 }

@@ -6,18 +6,26 @@
 import { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 
 type columnDiscriminatedUnionTypes = PageObjectResponse["properties"];
-type NotionColumnTypes =
+export type NotionColumnTypes =
 	columnDiscriminatedUnionTypes[keyof columnDiscriminatedUnionTypes]["type"];
+// type SupportedQueryableNotionColumnTypes = Exclude<NotionColumnTypes, "created_by" | >
 
-export type FilterOptionNames =
-	| "text"
-	| "title"
-	| "number"
-	| "checkbox"
-	| "select"
-	| "multi_select"
-	| "url"
-	| "date";
+export type SupportedNotionColumnTypes = Exclude<
+	NotionColumnTypes,
+	| "formula"
+	| "files"
+	| "people"
+	| "relation"
+	| "rollup"
+	| "status"
+	| "phone_number"
+	| "email"
+	| "date"
+	| "created_by"
+	| "last_edited_by"
+	| "created_time"
+	| "last_edited_time"
+>;
 
 type TextPropertyFilters = {
 	equals: string;
@@ -80,7 +88,7 @@ type DatePropertyFilters = {
 };
 
 export type FilterOptions<T = []> = {
-	text: TextPropertyFilters;
+	rich_text: TextPropertyFilters;
 	title: TextPropertyFilters;
 	number: NumberPropertyFilters;
 	checkbox: CheckBoxPropertyFilters;
@@ -98,7 +106,10 @@ const x = {
 	character: "multi_select",
 };
 
-type ColumnNameToNotionColumnType<T> = Record<keyof T, FilterOptionNames>;
+type ColumnNameToNotionColumnType<T> = Record<
+	keyof T,
+	SupportedNotionColumnTypes
+>;
 type ColumnNameToPossibleValues = Record<string, any>;
 // T is a column name to column type
 // Y is the collection type
@@ -112,19 +123,19 @@ export type SingleFilter<
 
 export type CompoundFilters<
 	Y extends Record<string, any>,
-	T extends Record<keyof Y, FilterOptionNames>
+	T extends Record<keyof Y, SupportedNotionColumnTypes>
 > =
 	| { and: Array<SingleFilter<Y, T> | CompoundFilters<Y, T>> }
 	| { or: Array<SingleFilter<Y, T> | CompoundFilters<Y, T>> };
 
 export type QueryFilter<
 	Y extends Record<string, any>,
-	T extends Record<keyof Y, FilterOptionNames>
+	T extends Record<keyof Y, SupportedNotionColumnTypes>
 > = SingleFilter<Y, T> | CompoundFilters<Y, T>;
 
 export type Query<
 	Y extends Record<string, any>,
-	T extends Record<keyof Y, FilterOptionNames>
+	T extends Record<keyof Y, SupportedNotionColumnTypes>
 > = {
 	filter?: QueryFilter<Y, T>;
 	sort?: [];

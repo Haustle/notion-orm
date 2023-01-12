@@ -4,22 +4,21 @@ import {
 } from "@notionhq/client/build/src/api-endpoints";
 import { Client } from "@notionhq/client";
 import { getCall } from "./BuildCall";
-import { PropertyType } from "./GenerateTypes";
 import path from "path";
-import { NotionConfigType } from "./NotionConfig";
+import { NotionConfigType } from "./index";
 import {
 	apiFilterType,
 	apiSingleFilter,
 	CompoundFilters,
-	FilterOptionNames,
 	Query,
 	QueryFilter,
 	SingleFilter,
+	SupportedNotionColumnTypes,
 } from "./queryTypes";
 
 export type propNameToColumnNameType = Record<
 	string,
-	{ columnName: string; type: PropertyType }
+	{ columnName: string; type: SupportedNotionColumnTypes }
 >;
 
 // Import auth key from config file
@@ -32,7 +31,7 @@ export class DatabaseActions<
 	DatabaseSchemaType extends Record<string, any>,
 	ColumnNameToColumnType extends Record<
 		keyof DatabaseSchemaType,
-		FilterOptionNames
+		SupportedNotionColumnTypes
 	>
 > {
 	private NotionClient: Client = new Client({
