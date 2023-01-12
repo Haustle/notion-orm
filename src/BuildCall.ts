@@ -9,8 +9,16 @@ export function getCall(args: {
 		return selectCall({ value });
 	} else if (type === "multi_select" && Array.isArray(value)) {
 		return multiSelectCall({ value });
+	} else if (type === "status" && typeof value === "string") {
+		return statusCall({ option: value });
 	} else if (type === "number" && typeof value === "number") {
 		return numberCall({ value });
+	} else if (type === "email" && typeof value === "string") {
+		return emailCall({ value });
+	} else if (type === "date" && typeof value === "object") {
+		return dateCall({ value });
+	} else if (type === "phone_number" && typeof value === "string") {
+		return phoneNumberCall({ value });
 	} else if (type === "url" && typeof value === "string") {
 		return urlCall({ url: value });
 	} else if (type === "checkbox" && typeof value === "boolean") {
@@ -38,6 +46,23 @@ const selectCall = (args: { value: string }) => {
 		name: value,
 	};
 	return { select };
+};
+
+const dateCall = (args: { value: { start: string; end?: string } }) => {
+	const { value } = args;
+	return { date: value };
+};
+const phoneNumberCall = (args: { value: string }) => {
+	const { value } = args;
+	return { phone_number: value };
+};
+
+const statusCall = (args: { option: string }) => {
+	const { option } = args;
+	const status = {
+		name: option,
+	};
+	return { status };
 };
 
 const multiSelectCall = (args: { value: Array<string> }) => {
@@ -85,4 +110,9 @@ const urlCall = (args: { url: string }) => {
 const checkboxCall = (args: { checked: boolean }) => {
 	const { checked: checkbox } = args;
 	return { checkbox };
+};
+
+const emailCall = (args: { value: string }) => {
+	const { value } = args;
+	return { email: value };
 };

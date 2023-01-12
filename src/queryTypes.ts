@@ -17,10 +17,6 @@ export type SupportedNotionColumnTypes = Exclude<
 	| "people"
 	| "relation"
 	| "rollup"
-	| "status"
-	| "phone_number"
-	| "email"
-	| "date"
 	| "created_by"
 	| "last_edited_by"
 	| "created_time"
@@ -70,11 +66,14 @@ type MultiSelectPropertyFilters<T> = {
 	is_not_empty: true;
 };
 
+type StatusPropertyFilters<T> = SelectPropertyFilters<T>;
+
+type ISO8601Date = string;
 type DatePropertyFilters = {
-	equals: string;
-	before: string;
-	after: string;
-	on_or_before: string;
+	equals: ISO8601Date;
+	before: ISO8601Date;
+	after: ISO8601Date;
+	on_or_before: ISO8601Date;
 	is_empty: true;
 	is_not_empty: true;
 	on_or_after: string;
@@ -94,17 +93,16 @@ export type FilterOptions<T = []> = {
 	checkbox: CheckBoxPropertyFilters;
 	select: SelectPropertyFilters<T>;
 	multi_select: MultiSelectPropertyFilters<T>;
-	url: string;
+	url: TextPropertyFilters;
 	date: DatePropertyFilters;
+	status: StatusPropertyFilters<T>;
+	email: TextPropertyFilters;
+	phone_number: TextPropertyFilters;
 };
 
 /**
  * Types to build query object user types out
  */
-
-const x = {
-	character: "multi_select",
-};
 
 type ColumnNameToNotionColumnType<T> = Record<
 	keyof T,

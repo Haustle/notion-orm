@@ -43,7 +43,12 @@ export async function createTypescriptFileForDatabase(
 			type: columnType,
 		};
 
-		if (columnType === "title" || columnType === "rich_text") {
+		if (
+			columnType === "title" ||
+			columnType === "rich_text" ||
+			columnType === "email" ||
+			columnType === "phone_number"
+		) {
 			// add text column to collection type
 			databaseColumnTypeProps.push(
 				createTextProperty({
@@ -62,7 +67,11 @@ export async function createTypescriptFileForDatabase(
 		} else if (columnType === "date") {
 			// add Date column to collection type
 			databaseColumnTypeProps.push(createDateProperty(camelizedColumnName));
-		} else if (columnType == "select" || columnType == "multi_select") {
+		} else if (
+			columnType === "select" ||
+			columnType === "status" ||
+			columnType === "multi_select"
+		) {
 			// @ts-ignore
 			const options = value[columnType].options.map((x) => x.name);
 			databaseColumnTypeProps.push(
@@ -201,15 +210,26 @@ function createOtherStringProp() {
 		ts.factory.createTypeLiteralNode([]),
 	]);
 }
+
 function createDateProperty(name: string) {
 	return ts.factory.createPropertySignature(
 		undefined,
 		ts.factory.createIdentifier(name),
 		ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-		ts.factory.createTypeReferenceNode(
-			ts.factory.createIdentifier("Date"),
-			undefined
-		)
+		ts.factory.createTypeLiteralNode([
+			ts.factory.createPropertySignature(
+				undefined,
+				ts.factory.createIdentifier("start"),
+				undefined,
+				ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
+			),
+			ts.factory.createPropertySignature(
+				undefined,
+				ts.factory.createIdentifier("end"),
+				ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+				ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
+			),
+		])
 	);
 }
 

@@ -76,7 +76,7 @@ export const createDatabaseTypes = async (args: NotionConfigType) => {
 };
 
 // Create the export statement for database file file
-// export { databseName } from "./databaseName"
+// export { databaseName } from "./databaseName"
 function databaseExportStatement(args: { databaseClassName: string }) {
 	const { databaseClassName } = args;
 	return ts.factory.createExportDeclaration(
@@ -126,11 +126,11 @@ function createDatabaseBarrelFile(args: {
 
 	// Create TypeScript and JavaScript file
 	fs.writeFileSync(
-		path.resolve(DATABASES_DIR, "notion.ts"),
+		path.resolve(DATABASES_DIR, "index.ts"),
 		typescriptCodeToString
 	);
 	fs.writeFileSync(
-		path.resolve(DATABASES_DIR, "notion.js"),
-		typescriptCodeToString
+		path.resolve(DATABASES_DIR, "index.js"),
+		transpileToJavaScript
 	);
 }
