@@ -15,7 +15,7 @@ export function getCall(args: {
 		return numberCall({ value });
 	} else if (type === "email" && typeof value === "string") {
 		return emailCall({ value });
-	} else if (type === "date" && typeof value === "string") {
+	} else if (type === "date" && typeof value === "object") {
 		return dateCall({ value });
 	} else if (type === "phone_number" && typeof value === "string") {
 		return phoneNumberCall({ value });
@@ -48,12 +48,9 @@ const selectCall = (args: { value: string }) => {
 	return { select };
 };
 
-const dateCall = (args: { value: string }) => {
+const dateCall = (args: { value: { start: string; end?: string } }) => {
 	const { value } = args;
-	const date = {
-		start: value,
-	};
-	return { date };
+	return { date: value };
 };
 const phoneNumberCall = (args: { value: string }) => {
 	const { value } = args;

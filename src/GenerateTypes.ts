@@ -210,15 +210,26 @@ function createOtherStringProp() {
 		ts.factory.createTypeLiteralNode([]),
 	]);
 }
+
 function createDateProperty(name: string) {
 	return ts.factory.createPropertySignature(
 		undefined,
 		ts.factory.createIdentifier(name),
 		ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-		ts.factory.createTypeReferenceNode(
-			ts.factory.createIdentifier("Date"),
-			undefined
-		)
+		ts.factory.createTypeLiteralNode([
+			ts.factory.createPropertySignature(
+				undefined,
+				ts.factory.createIdentifier("start"),
+				undefined,
+				ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
+			),
+			ts.factory.createPropertySignature(
+				undefined,
+				ts.factory.createIdentifier("end"),
+				ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+				ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
+			),
+		])
 	);
 }
 
