@@ -10,14 +10,20 @@
 A library to simplify interacting with [Notion](https://notion.so/product) databases/tables via Notion API
 
 ## Disclaimer
+### Available Database Features
+- Adding
+- Querying
 
-This library currently only supports databases that use the following column types
-
+### Supported Column Types
 - Multiselect
-- Text
 - Select
+- Status
+- Date
+- Text
 - Url
 - Checkbox
+- Email 
+- Phone Number
 
 # Install and Setup
 
@@ -38,8 +44,8 @@ The only requirement is a Notion Developer API Key ([here](https://developers.no
     const NotionConfig = {
     	auth: process.env.NOTION_KEY,
     	databaseIds: [
-    		"a52239e4839d4a3a8f4875376cfbfb02", 
-    		"5f4bf76a1e3f48d684d2506ea2690d64"
+    	    "a52239e4839d4a3a8f4875376cfbfb02", 
+    	    "5f4bf76a1e3f48d684d2506ea2690d64"
     	],
     };
     
@@ -72,8 +78,8 @@ Page title is required when adding
 
 ```tsx
 notion.books.add({
-	name: "Catcher in the Rye",
-	rating: "⭐️⭐️⭐️⭐️⭐️"
+    name: "Catcher in the Rye",
+    rating: "⭐️⭐️⭐️⭐️⭐️"
 })
 ```
 
@@ -83,11 +89,11 @@ notion.books.add({
 
 ```tsx
 notion.books.query({
-	filter: {
-		genre: {
-			contains: "Sci-Fi"
-		}
-	}
+    filter: {
+        genre: {
+            contains: "Sci-Fi"
+        }
+    }
 })
 ```
 
@@ -95,21 +101,21 @@ notion.books.query({
 
 ```tsx
 await notion.books.query({
-		filter: {
-			or: [
-				{
-					genre: {
-						contains: "Sci-Fi",
-					},
-				},
-				{
-					genre: {
-						contains: "Biography",
-					},
-				},
-			],
-		},
-	});
+    filter: {
+        or: [
+            {
+                genre: {
+                    contains: "Sci-Fi",
+                },
+            },
+            {
+                genre: {
+                    contains: "Biography",
+                },
+            },
+        ],
+    },
+});
 ```
 
 ## What is Object Relational Map (ORM)
