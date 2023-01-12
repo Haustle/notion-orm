@@ -1,6 +1,6 @@
 {
   "name": "@haustle/notion-orm",
-  "version": "0.0.39",
+  "version": "0.0.41",
   "description": "tool to bring notion databases schemas/types to typescript",
   "main": "build/databases/index.js",
   "bin": {
