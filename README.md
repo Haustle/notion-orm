@@ -2,12 +2,14 @@
 
 <aside>
 👉 This package is currently still in development.
-
 </aside>
+
+**Currently**: working on integration with Next.js
+
 
 # Description
 
-A library to simplify interacting with [Notion](https://notion.so/product) databases/tables via Notion API
+A library to simplify interacting with [Notion](https://notion.so/product) databases/tables via Notion API. Giving typeahead support on user specified databases.
 
 ## Disclaimer
 ### Available Database Features
