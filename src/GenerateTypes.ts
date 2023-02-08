@@ -86,7 +86,7 @@ export async function createTypescriptFileForDatabase(
 
 	// Object type that represents the database schema
 	const DatabaseSchemaType = ts.factory.createTypeAliasDeclaration(
-		undefined,
+		[ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
 		ts.factory.createIdentifier("DatabaseSchemaType"),
 		undefined,
 		ts.factory.createTypeLiteralNode(databaseColumnTypeProps)
@@ -94,11 +94,19 @@ export async function createTypescriptFileForDatabase(
 
 	// Top level non-nested variable, functions, types for database files
 	const TsNodesForDatabaseFile = ts.factory.createNodeArray([
-		createDatabaseActionsClassImport(),
+		createNameImport({
+			namedImport: "DatabaseActions",
+			path: "../src/DatabaseActions",
+		}),
+		createNameImport({
+			namedImport: "Query",
+			path: "../src/queryTypes",
+		}),
 		createDatabaseIdVariable(databaseId),
 		DatabaseSchemaType,
 		createColumnNameToColumnProperties(propNameToColumnName),
 		createColumnNameToColumnType(),
+		createQueryTypeExport(),
 		createDatabaseClassExport({ databaseName: databaseClassName }),
 	]);
 
@@ -355,7 +363,8 @@ function createColumnNameToColumnType() {
 }
 
 // Need to import the database class used to execute database actions (adding + querying)
-function createDatabaseActionsClassImport() {
+function createNameImport(args: { namedImport: string; path: string }) {
+	const { namedImport, path } = args;
 	return ts.factory.createImportDeclaration(
 		undefined,
 		ts.factory.createImportClause(
@@ -365,12 +374,30 @@ function createDatabaseActionsClassImport() {
 				ts.factory.createImportSpecifier(
 					false,
 					undefined,
-					ts.factory.createIdentifier("DatabaseActions")
+					ts.factory.createIdentifier(namedImport)
 				),
 			])
 		),
-		ts.factory.createStringLiteral("../src/DatabaseActions"),
+		ts.factory.createStringLiteral(path),
 		undefined
+	);
+}
+
+function createQueryTypeExport() {
+	return ts.factory.createTypeAliasDeclaration(
+		[ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
+		ts.factory.createIdentifier("QuerySchemaType"),
+		undefined,
+		ts.factory.createTypeReferenceNode(ts.factory.createIdentifier("Query"), [
+			ts.factory.createTypeReferenceNode(
+				ts.factory.createIdentifier("DatabaseSchemaType"),
+				undefined
+			),
+			ts.factory.createTypeReferenceNode(
+				ts.factory.createIdentifier("ColumnNameToColumnType"),
+				undefined
+			),
+		])
 	);
 }
 
@@ -413,7 +440,7 @@ function createDatabaseClassExport(args: { databaseName: string }) {
 }
 
 // for a type's property name
-function camelize(str: string) {
+export function camelize(str: string) {
 	return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function (match, index) {
 		if (+match === 0) return ""; // or if (/\s+/.test(match)) for white spaces
 		return index === 0 ? match.toLowerCase() : match.toUpperCase();
