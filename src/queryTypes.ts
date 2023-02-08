@@ -3,7 +3,10 @@
  */
 // import { PageObjectResponse }
 
-import { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import {
+	PageObjectResponse,
+	QueryDatabaseResponse,
+} from "@notionhq/client/build/src/api-endpoints";
 
 type columnDiscriminatedUnionTypes = PageObjectResponse["properties"];
 export type NotionColumnTypes =
@@ -166,4 +169,9 @@ type apiAndFilter = {
 
 type apiOrFilter = {
 	or: Array<apiFilterType>;
+};
+
+export type SimpleQueryResponse<DatabaseSchema> = {
+	results: Partial<DatabaseSchema>[];
+	rawResponse: QueryDatabaseResponse;
 };

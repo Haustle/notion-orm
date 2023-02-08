@@ -1,6 +1,9 @@
 import {
 	CreatePageParameters,
+	CreatePageResponse,
+	PageObjectResponse,
 	QueryDatabaseParameters,
+	QueryDatabaseResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 import { Client } from "@notionhq/client";
 import { getCall } from "./BuildCall";
@@ -12,10 +15,12 @@ import {
 	CompoundFilters,
 	Query,
 	QueryFilter,
+	SimpleQueryResponse,
 	SingleFilter,
 	SupportedNotionColumnTypes,
 } from "./queryTypes";
 
+import { camelize } from "./GenerateTypes";
 export type propNameToColumnNameType = Record<
 	string,
 	{ columnName: string; type: SupportedNotionColumnTypes }
@@ -51,7 +56,10 @@ export class DatabaseActions<
 	}
 
 	// Add page to a database
-	async add(pageObject: DatabaseSchemaType) {
+	async add(
+		pageObject: DatabaseSchemaType,
+		getCallBody?: boolean
+	): Promise<CreatePageParameters | CreatePageResponse> {
 		const callBody: CreatePageParameters = {
 			parent: {
 				database_id: this.databaseId,
@@ -70,12 +78,18 @@ export class DatabaseActions<
 			callBody.properties[columnName] = columnObject!;
 		});
 
-		// console.log(JSON.stringify(callBody, null, 4));
-		await this.NotionClient.pages.create(callBody);
+		// CORS: If user wants the body of the call. Can then send to API
+		if (getCallBody) {
+			return callBody;
+		}
+
+		return await this.NotionClient.pages.create(callBody);
 	}
 
 	// Look for page inside the database
-	async query(query: Query<DatabaseSchemaType, ColumnNameToColumnType>) {
+	async query(
+		query: Query<DatabaseSchemaType, ColumnNameToColumnType>
+	): Promise<SimpleQueryResponse<DatabaseSchemaType>> {
 		const queryCall: QueryDatabaseParameters = {
 			database_id: this.databaseId,
 		};
@@ -88,12 +102,85 @@ export class DatabaseActions<
 			queryCall["filter"] = filters;
 		}
 
-		console.log(JSON.stringify(queryCall, null, 4));
-
 		const sort = query.sort;
 
-		const apiQuery = await this.NotionClient.databases.query(queryCall);
-		console.log(apiQuery);
+		const response = await this.NotionClient.databases.query(queryCall);
+
+		return this.simplifyQueryResponse(response);
+	}
+
+	private simplifyQueryResponse(
+		res: QueryDatabaseResponse
+	): SimpleQueryResponse<DatabaseSchemaType> {
+		// Is this smart too do...idk
+		const rawResults = res.results as PageObjectResponse[];
+		const rawResponse = res;
+
+		const results: Partial<DatabaseSchemaType>[] = rawResults.map((result) => {
+			const simpleResult: Partial<DatabaseSchemaType> = {};
+			const properties = Object.entries(result.properties);
+
+			for (const [columnName, result] of properties) {
+				const camelizeColumnName = camelize(columnName);
+
+				const columnType = this.propNameToColumnName[camelizeColumnName].type;
+
+				// @ts-ignore
+				simpleResult[camelizeColumnName] = this.getResponseValue(
+					columnType,
+					result
+				);
+			}
+			return simpleResult;
+		});
+
+		return {
+			results,
+			rawResponse,
+		};
+	}
+
+	private getResponseValue(
+		prop: SupportedNotionColumnTypes,
+		x: Record<string, any>
+	) {
+		switch (prop) {
+			case "select": {
+				const { select } = x;
+				if (select) {
+					return select["name"];
+				}
+				return undefined;
+			}
+			case "title": {
+				const { title } = x;
+				if (title) {
+					const combinedText = title.map(
+						({ plain_text }: { plain_text: string }) => plain_text
+					);
+					return combinedText.join("");
+				}
+				return undefined;
+			}
+			case "url": {
+				const { url } = x;
+				return url;
+			}
+
+			case "multi_select": {
+				const { multi_select } = x;
+				if (multi_select) {
+					const multi_selectArr: string[] = multi_select.map(
+						({ name }: { name: string }) => name
+					);
+					return multi_selectArr;
+				}
+				return undefined;
+			}
+			default: {
+				return "lol";
+			}
+		}
 	}
 
 	private recursivelyBuildFilter(

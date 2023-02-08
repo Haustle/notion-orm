@@ -86,7 +86,7 @@ export async function createTypescriptFileForDatabase(
 
 	// Object type that represents the database schema
 	const DatabaseSchemaType = ts.factory.createTypeAliasDeclaration(
-		undefined,
+		[ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
 		ts.factory.createIdentifier("DatabaseSchemaType"),
 		undefined,
 		ts.factory.createTypeLiteralNode(databaseColumnTypeProps)
@@ -413,7 +413,7 @@ function createDatabaseClassExport(args: { databaseName: string }) {
 }
 
 // for a type's property name
-function camelize(str: string) {
+export function camelize(str: string) {
 	return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function (match, index) {
 		if (+match === 0) return ""; // or if (/\s+/.test(match)) for white spaces
 		return index === 0 ? match.toLowerCase() : match.toUpperCase();
