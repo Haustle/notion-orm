@@ -6,7 +6,7 @@ import * as ts from "typescript";
 import fs from "fs";
 import path from "path";
 import { DATABASES_DIR } from "./index";
-import { NotionColumnTypes } from "queryTypes";
+import { NotionColumnTypes } from "./queryTypes";
 
 type propNameToColumnNameType = Record<
 	string,
