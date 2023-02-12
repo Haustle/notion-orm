@@ -9,7 +9,7 @@ import * as ts from "typescript";
 import fs from "fs";
 import path from "path";
 
-export const DATABASES_DIR = path.join(__dirname, "../../build", "databases");
+export const DATABASES_DIR = path.join(__dirname, "../../build", "db");
 
 export type NotionConfigType = {
 	auth: string;
