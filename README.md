@@ -1,134 +1,255 @@
 # Notion ORM
 
-<aside>
-👉 This package is currently still in development.
-</aside>
+⚠️ This package is Still in development 🏗️
 
-**Currently**: working on integration with Next.js
+A library to simplify adding and querying [Notion](https://notion.so/product) databases/tables. Giving typeahead/intellisense support on columns and expected column values on user specified databases. Built on top of [Notion API](https://developers.notion.com/)
 
+Databases with the following column types are supported:
 
-# Description
-
-A library to simplify interacting with [Notion](https://notion.so/product) databases/tables via Notion API. Giving typeahead support on user specified databases.
-
-## Disclaimer
-### Available Database Features
-- Adding
-- Querying
-
-### Supported Column Types
-- Multiselect
+- Multi-select
 - Select
 - Status
 - Date
 - Text
 - Url
 - Checkbox
-- Email 
+- Email
 - Phone Number
 
-# Install and Setup
+## Installation
+
+The only requirement is a Notion Developer API key ([here](https://developers.notion.com/)) and database IDs you want. Be sure to connect your [integration](https://developers.notion.com/docs/working-with-databases#adding-pages-to-a-database) (🚧 *Permissions* section) with your tables
 
 ```bash
-npm install @haustle/notion-orm
+npm install @haustle/notion-orm --save-dev
 ```
 
-The only requirement is a Notion Developer API Key ([here](https://developers.notion.com/)) and database IDs you want
+At the root of your project create a `notion.config.js` file
 
-1. At the root of your project create pass your developer key and database IDs ([help](https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping)). 
-    ```
-    Copy database/table URL
-    https://www.notion.so/haustle/<This-is-the-database-id>?v=123
-    ```
-    ```jsx
-    // notion.config.js
-    
-    const NotionConfig = {
-    	auth: process.env.NOTION_KEY,
-    	databaseIds: [
-    	    "a52239e4839d4a3a8f4875376cfbfb02", 
-    	    "5f4bf76a1e3f48d684d2506ea2690d64"
-    	],
-    };
-    
-    module.exports = NotionConfig;
-    ```
-    - Be sure to connect your integration with your tables
-    
-2. Generate Types
-    
-    ```bash
-    npx notion generate
-    ```
-    
-3. Import databases in your TypeScript file
-    
-    ```tsx
-    // Barrel import, giving you access to all your databases
-    import * as notion from "@haustle/notion-orm"
-    
-    // Import specific database
-    import { databaseName } from "@haustle/notion-orm"
-    ```
-    
+You’ll need to pass your developer key and database IDs. How to get database IDs [here](https://developers.notion.com/docs/working-with-databases#adding-pages-to-a-database)
 
-# Actions
+```jsx
+// notion.config.js
 
-## Add a page
+const auth = process.env.NOTION_KEY;
+const NotionConfig = {
+	auth,
+	databaseIds: [
+		"a52239e4839d4a3a8f4875376cfbfb02",
+		"5f4bf76a1e3f48d684d2506ea2690d64",
+	],
+};
 
-Page title is required when adding
+module.exports = NotionConfig;
+```
+
+Execute the following command from the root project directory.
+
+```bash
+npx notion-orm generate
+```
+
+**Package Size**
+Unpackaged size is 70.6KB and the installation size is 5.12MB (5.03MB from `@notionhq/client` dependency)
+
+## Implementation
+
+Databases can be imported via barrel file or from the individual database file. All database names will be camelCase 🐫.
 
 ```tsx
+// Barrel Import (access to all databases)
+import * as notion from "@haustle/notion-orm";
+notion.databaseName.add();
+notion.databaseName2.query();
+```
+
+```jsx
+// Individual Database Import
+import {
+	databaseName,
+	DatabaseSchemaType,
+	QuerySchemaType,
+} from "@haustle/notion-orm/build/db/databaseName";
+
+databaseName.add();
+```
+
+- `DatabaseSchemaType`: Object type accepted in the database’s `add()` function
+- `QuerySchemaType`: Object type accepted in the database’s `query()` function
+
+The following examples for querying & adding are for server-side calls. If you’re looking to use this framework to execute client-side calls (ex. button click add/query X) visit the [Client (React)](https://www.notion.so/Notion-ORM-README-fdd30271bf944a3e85cb999ec8d5447d) section after reading
+
+**Adding**
+
+Only required column required is the title.
+
+```jsx
 notion.books.add({
-    name: "Catcher in the Rye",
-    rating: "⭐️⭐️⭐️⭐️⭐️"
-})
-```
-
-## Query Database
-
-### Single Filter
-
-```tsx
-notion.books.query({
-    filter: {
-        genre: {
-            contains: "Sci-Fi"
-        }
-    }
-})
-```
-
-### Nested Filters
-
-```tsx
-await notion.books.query({
-    filter: {
-        or: [
-            {
-                genre: {
-                    contains: "Sci-Fi",
-                },
-            },
-            {
-                genre: {
-                    contains: "Biography",
-                },
-            },
-        ],
-    },
+	bookName: "Raphael, Painter in Rome: a Novel", // title
+	author: "Stephanie Storey", // text
+	status: "In progress", // status
+	numberOfPages: 307, // number
+	genre: ["Historical Fiction"], // multi-select
+	rating: "⭐️⭐️⭐️⭐️", // select
+	startDate: {
+		// date
+		start: "2023-01-01",
+	},
+	phone: "0000000000", // phone
+	email: "tyrus@haustle.studio", // email
 });
 ```
 
-## What is Object Relational Map (ORM)
+All column types in Notion databases are mapped to a typescript type.
 
-> …[programming](https://en.wikipedia.org/wiki/Computer_programming) technique for converting data between [type systems](https://en.wikipedia.org/wiki/Type_system) using [object-oriented](https://en.wikipedia.org/wiki/Object-oriented)  programming languages. This creates, in effect, a "virtual [object database](https://en.wikipedia.org/wiki/Object_database)" that can be used from within the programming language.
-> 
+| Column Type  | Object         |
+| ------------ | -------------- |
+| Title        | string         |
+| Text         | string         |
+| Select       | string         |
+| Multi-select | Array (string) |
+| Status       | string         |
+| Number       | number         |
+| Date         | Object         |
+| Phone number | string         |
+| Email        | string         |
 
-[Wikipedia](https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping)
+**Querying**
 
-# Story
+For each column type you’ll be presented with the available querying filter. Find all filter conditions [here](https://developers.notion.com/reference/post-database-query-filter)
 
-While taking a databases class I got exposed to Prisma and thought the developer experience was magical. Around the same time the Notion Developer API was rolling out and I thought the idea of bringing creating a ORM to Notion databases would be a fun cool idea, but I was terrible at TypeScript.
+While the querying functionality works, it’s **not complete and there is room for user error**. For instance, the `filter` object should contain one child. Either the column name (signifies single filter), or `and` or `or` (signify compound filters). However there is no typecheck in place to stop adding multiple children
 
-This project was started as a way to strengthen my TypeScript knowledge. I’ve succeeded in some regard, but there are still a few `@ts-ignore` in the project.
+Unlike `add()` , there is no transformation after the inputted object. So the querying object you’re creating is exactly what you’d normally use to query the Notion API. Learn more about them [here](https://developers.notion.com/reference/post-database-query-filter)
+
+Example of a single filter
+
+```tsx
+notion.books.query({
+  filter: {
+    genre: {
+      contains: "Sci-Fi",
+    },
+  },
+	sort: [
+		{
+			property: "name:,
+			direction: "ascending"
+		},
+		{
+			property: "Author name:,
+			direction: "ascending"
+		}
+	]
+});
+```
+
+Example of compound filters, which is signified with `and` and `or`. You can nest these are far as you want (i.e `and` filters within `or` filter). Learn more [here](https://developers.notion.com/reference/post-database-query-filter#compound-filter-object)
+
+```tsx
+await notion.books.query({
+	filter: {
+		or: [
+			{
+				genre: {
+					contains: "Sci-Fi",
+				},
+			},
+			{
+				genre: {
+					contains: "Biography",
+				},
+			},
+		],
+	},
+});
+```
+
+Down below is what’s returned on a successful response. `results` being a simplified extracted version of the `rawResponse` (response from Notion API)
+
+```json
+{
+	rawResponse: <whatever Notion API returns>,
+	results: [
+		{
+			bookName: "How to Change Your Mind",
+			genre: ["Non-fiction"],
+			numberPages: 460,
+			rating: "⭐️⭐️⭐️⭐️"
+		},
+		// ... more results
+	]
+}
+```
+
+## Client-side (React)
+
+Notion API currently blocks calls from browser (per CORS)
+
+You can get around this by creating API endpoints on stack of your choice. I’ve provided examples only for **Next.js**, but the high level implementation should work with any backend.
+
+If you’re planning to only make server-side calls to your Notion database (from `GetStaticProps` or `GetServerSideProps`). These calls work totally fine, as these functions are executed server-side before page load. So you can ignore the proceeding steps
+
+```tsx
+export const getStaticProps: GetStaticProps = async () => {
+	const response = await NotionClient.books.query({
+		filter: {
+			genre: {
+				is_not_empty: true,
+			},
+		},
+	});
+	return {
+		props: {
+			apiResponse: response
+		}
+	}
+```
+
+To execute calls client-side (ex. on button click) an API endpoint is needed to get around CORS. In this example we’re passing the databases `DatabaseSchemaType` as the body of the API call.
+
+```tsx
+import { DatabaseSchemaType } from "@haustle/notion-orm/build/db/books";
+
+async function addPageToNotionDatabase() {
+	const example: DatabaseSchemaType = {
+		bookName: "How to Change Your Mind",
+		genre: ["Non-fiction"],
+	};
+
+	// make sure this route reflects your API path
+	await fetch("/api/notion/books", {
+		method: "POST",
+		body: JSON.stringify(example),
+	});
+}
+```
+
+```jsx
+<button onClick={ async() => await addPageToNotionDatabase()}>
+```
+
+Example API endpoint below, where we’re taking the body of type `DatabaseSchemaType` and passing it into the respected databases `add()` function to add a new page to the database. Learn more about _Next.js_ API’s and routing [here](https://nextjs.org/docs/api-routes/introduction).
+
+```tsx
+// pages/api/notion/yourDatabaseName.ts
+
+import type { NextApiRequest, NextApiResponse } from "next";
+import {
+	DatabaseSchemaType,
+	yourDatabaseName,
+} from "@haustle/notion-orm/build/db/yourDatabaseName";
+
+export default async function handler(
+	req: NextApiRequest,
+	res: NextApiResponse
+) {
+	const { method, body } = req;
+
+	if (method === "POST") {
+		const bodyJSON = JSON.parse(body) as DatabaseSchemaType;
+		await yourDatabaseName.add(bodyJSON);
+	}
+}
+```
+
