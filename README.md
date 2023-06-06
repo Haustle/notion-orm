@@ -46,7 +46,7 @@ module.exports = NotionConfig;
 Execute the following command from the root project directory.
 
 ```bash
-npx notion-orm generate
+npx notion generate
 ```
 
 **Package Size**
