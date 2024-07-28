@@ -133,11 +133,11 @@ notion.books.query({
   },
 	sort: [
 		{
-			property: "name:,
+			property: "name",
 			direction: "ascending"
 		},
 		{
-			property: "Author name:,
+			property: "Author name",
 			direction: "ascending"
 		}
 	]
@@ -167,9 +167,9 @@ await notion.books.query({
 
 Down below is what’s returned on a successful response. `results` being a simplified extracted version of the `rawResponse` (response from Notion API)
 
-```json
+```tsx
 {
-	rawResponse: <whatever Notion API returns>,
+	rawResponse: { /* Whatever Notion API returns */},
 	results: [
 		{
 			bookName: "How to Change Your Mind",
@@ -177,7 +177,6 @@ Down below is what’s returned on a successful response. `results` being a simp
 			numberPages: 460,
 			rating: "⭐️⭐️⭐️⭐️"
 		},
-		// ... more results
 	]
 }
 ```
